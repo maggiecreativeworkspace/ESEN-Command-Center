@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ĒSEN Command Center</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #faf8f5; color: #2a2a2a; font-size: 13px; line-height: 1.5; padding: 24px;
+}
+.snapshot-banner {
+  background: #f8f3e7; border: 1px solid #e5d9b8; border-radius: 3px;
+  padding: 10px 14px; margin-bottom: 16px; font-size: 11px; color: #6a5f4f;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.snapshot-banner b { color: #2a2a2a; }
+.snapshot-banner .pill {
+  background: #2a2a2a; color: #f8f3e7;
+  font-size: 9px; padding: 3px 8px; border-radius: 8px;
+  letter-spacing: 0.8px; text-transform: uppercase;
+}
+.header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  border-bottom: 1px solid #e5e0d8; padding-bottom: 16px; margin-bottom: 22px;
+  flex-wrap: wrap; gap: 12px;
+}
+.brand h1 {
+  font-family: Georgia, "Songti SC", "Times New Roman", serif;
+  font-size: 22px; font-weight: 500; letter-spacing: 1.5px;
+}
+.brand .sub {
+  font-size: 11px; color: #8a7f6f; letter-spacing: 1.4px;
+  text-transform: uppercase; margin-top: 5px;
+}
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls label { font-size: 10px; color: #8a7f6f; text-transform: uppercase; letter-spacing: 0.6px; }
+.controls input[type=date] {
+  font-family: inherit; font-size: 11px; padding: 5px 8px;
+  border: 1px solid #d8d2c4; background: #fff; color: #2a2a2a; border-radius: 2px;
+}
+.btn {
+  background: #2a2a2a; color: #faf8f5; border: none;
+  padding: 6px 12px; font-size: 11px; letter-spacing: 0.7px;
+  cursor: pointer; border-radius: 2px; text-transform: uppercase;
+  font-family: inherit;
+}
+.btn:hover { background: #b89968; }
+.btn.ghost { background: transparent; color: #6a5f4f; border: 1px solid #d8d2c4; }
+.btn.ghost:hover { background: #efeae0; color: #2a2a2a; }
+.timestamp { font-size: 11px; color: #8a7f6f; margin-left: 4px; }
+
+.section {
+  background: #fff; border: 1px solid #e5e0d8; border-radius: 4px;
+  padding: 18px 20px; margin-bottom: 16px;
+}
+.section h2 {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 16px; font-weight: 500; margin-bottom: 4px;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.section h2 .num {
+  font-family: Georgia, serif; font-size: 11px; color: #b89968;
+  letter-spacing: 1.5px; font-weight: 600;
+}
+.section .sub { font-size: 11px; color: #8a7f6f; margin-bottom: 14px; }
+
+.account-bar { display: flex; gap: 6px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.account-bar .ab-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+  color: #a89e8c; margin-right: 4px;
+}
+.account-pill {
+  font-size: 11px; background: #efeae0; color: #6a5f4f;
+  padding: 5px 11px; border-radius: 14px; cursor: pointer;
+  border: 1px solid transparent; user-select: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.account-pill .ap-dot { width: 8px; height: 8px; border-radius: 50%; }
+.account-pill.active { background: #2a2a2a; color: #faf8f5; border-color: #2a2a2a; }
+.account-pill:hover:not(.active) { background: #e5dfd0; }
+
+.overview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.overview-tile {
+  border: 1px solid #ece6d8; border-radius: 3px; padding: 12px 14px;
+  background: linear-gradient(180deg, #fefdfa 0%, #faf6ec 100%);
+}
+.overview-tile .ot-label {
+  font-size: 9px; text-transform: uppercase; color: #8a7f6f;
+  letter-spacing: 1px; font-weight: 600; margin-bottom: 6px;
+}
+.overview-tile .ot-value {
+  font-family: Georgia, "Songti SC", serif; font-size: 22px; line-height: 1.05;
+}
+.overview-tile .ot-sub { font-size: 10px; color: #a89e8c; margin-top: 4px; }
+
+.tab-bar { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid #e5e0d8; flex-wrap: wrap; }
+.tab {
+  padding: 8px 14px; font-size: 11px; cursor: pointer;
+  letter-spacing: 0.8px; text-transform: uppercase; color: #8a7f6f;
+  border-bottom: 2px solid transparent; user-select: none;
+}
+.tab.active { color: #2a2a2a; border-bottom-color: #b89968; font-weight: 600; }
+.tab:hover:not(.active) { color: #2a2a2a; }
+.tab .tab-count {
+  display: inline-block; font-size: 9px; background: #efeae0; color: #6a5f4f;
+  padding: 1px 6px; border-radius: 8px; margin-left: 4px;
+}
+
+.tab-body { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; }
+.tab-pane h3 {
+  font-family: Georgia, serif; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; color: #6a5f4f; margin-bottom: 10px;
+}
+.tab-pane h3 .ind { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.ind.win { background: #7a8a6a; }
+.ind.lose { background: #c87856; }
+.ind.top { background: #b89968; }
+
+.top-post {
+  border: 1px solid #ece6d8; border-radius: 3px;
+  padding: 10px 12px; margin-bottom: 8px; background: #fefdfa;
+}
+.tp-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.tp-account { font-size: 9px; color: #a89e8c; text-transform: uppercase; letter-spacing: 0.5px; }
+.tp-date { font-size: 10px; color: #8a7f6f; }
+.tp-title {
+  font-size: 12px; color: #2a2a2a; line-height: 1.4; margin-bottom: 6px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.tp-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  font-size: 10px; padding-top: 6px; border-top: 1px dashed #ece6d8;
+}
+.tp-stat { display: flex; flex-direction: column; }
+.tp-stat .k { color: #a89e8c; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tp-stat .v { font-family: Georgia, serif; color: #2a2a2a; font-size: 12px; }
+.tp-link { font-size: 10px; color: #b89968; margin-top: 4px; display: inline-block; text-decoration: none; }
+.tp-link:hover { color: #6a5f4f; text-decoration: underline; }
+
+.insight {
+  border-left: 3px solid #d8d2c4; padding: 8px 12px; margin-bottom: 8px;
+  background: #fbf9f4; border-radius: 0 2px 2px 0; font-size: 11px;
+}
+.insight.win { border-left-color: #7a8a6a; }
+.insight.lose { border-left-color: #c87856; }
+.insight .ins-title { font-weight: 600; color: #2a2a2a; margin-bottom: 3px; }
+.insight .ins-body { color: #4a4035; line-height: 1.45; }
+.insight .ins-data { font-size: 10px; color: #8a7f6f; font-style: italic; margin-top: 4px; }
+
+.idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.idea-card {
+  border: 1px solid #ece6d8; border-radius: 3px;
+  padding: 12px 14px; background: #fefdfa; position: relative;
+}
+.idea-card .idea-num {
+  position: absolute; top: 10px; right: 12px;
+  font-family: Georgia, serif; font-size: 22px; color: #efeae0; font-weight: 600;
+}
+.idea-card .idea-topic {
+  font-size: 9px; color: #b89968; text-transform: uppercase;
+  letter-spacing: 1.2px; font-weight: 600; margin-bottom: 4px;
+}
+.idea-card .idea-hook {
+  font-family: Georgia, "Songti SC", serif; font-size: 13px; color: #2a2a2a;
+  line-height: 1.4; margin-bottom: 6px; padding-right: 28px;
+}
+.idea-card .idea-format {
+  display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 8px;
+  background: #efeae0; color: #6a5f4f; margin-right: 6px; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.idea-card .idea-day {
+  display: inline-block; font-size: 9px; color: #6a5f4f;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.idea-card .idea-why {
+  font-size: 10px; color: #8a7f6f; margin-top: 6px;
+  line-height: 1.4; padding-top: 6px; border-top: 1px dashed #ece6d8;
+}
+
+.dow-grid {
+  display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 0;
+  border: 1px solid #ece6d8; border-radius: 3px; overflow: hidden; font-size: 10px;
+}
+.dow-cell { padding: 8px 10px; border-right: 1px solid #ece6d8; border-bottom: 1px solid #ece6d8; min-height: 44px; }
+.dow-cell:nth-child(8n) { border-right: none; }
+.dow-cell.head { background: #f8f3e7; font-weight: 600; color: #6a5f4f; text-align: center; }
+.dow-cell.row-label { background: #fbf9f4; font-weight: 600; color: #6a5f4f; }
+.dow-cell .dc-val { font-family: Georgia, serif; font-size: 13px; color: #2a2a2a; }
+.dow-cell .dc-meta { font-size: 9px; color: #8a7f6f; margin-top: 2px; }
+
+.film-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.film-card {
+  border: 1px solid #ece6d8; border-radius: 3px; padding: 10px;
+  background: linear-gradient(180deg, #fefdfa 0%, #faf6ec 100%);
+}
+.film-card .fc-day {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+  color: #b89968; font-weight: 600;
+}
+.film-card .fc-date { font-family: Georgia, serif; font-size: 14px; color: #2a2a2a; margin: 2px 0 8px; }
+.film-card .fc-format {
+  display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 8px;
+  background: #efeae0; color: #6a5f4f; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.film-card .fc-topic {
+  font-size: 11px; color: #2a2a2a; margin-bottom: 6px;
+  font-family: "PingFang SC", "Microsoft YaHei", Georgia, serif;
+}
+.film-card .fc-why { font-size: 9px; color: #8a7f6f; line-height: 1.4; }
+
+.changed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.changed-col h3 {
+  font-family: Georgia, serif; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+}
+.changed-col.rising h3 { color: #5a7050; }
+.changed-col.falling h3 { color: #a85a3a; }
+.change-item {
+  border: 1px solid #ece6d8; border-radius: 3px;
+  padding: 10px 12px; margin-bottom: 8px; background: #fefdfa;
+}
+.change-item .ci-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.change-item .ci-topic { font-size: 12px; font-weight: 600; color: #2a2a2a; }
+.change-item .ci-pct { font-family: Georgia, serif; font-size: 13px; }
+.change-item .ci-pct.up { color: #5a7050; }
+.change-item .ci-pct.down { color: #a85a3a; }
+.change-item .ci-meta { font-size: 10px; color: #8a7f6f; margin-top: 2px; }
+.change-item .ci-sample { font-size: 10px; color: #6a5f4f; margin-top: 4px; font-style: italic; }
+
+.error {
+  background: #fdf3ee; border: 1px solid #e5c4ad; color: #8a4a30;
+  padding: 12px 16px; border-radius: 2px; font-size: 12px; margin-bottom: 14px; display: none;
+}
+.error.active { display: block; }
+.empty { font-size: 11px; color: #a89e8c; font-style: italic; text-align: center; padding: 16px; }
+
+/* ============== SIDEBAR LAYOUT ============== */
+body { padding: 0; }
+.app-shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar {
+  background: #f3ede0; border-right: 1px solid #e5d9b8;
+  padding: 22px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar .sb-brand {
+  padding: 0 20px 18px; border-bottom: 1px solid #e5d9b8; margin-bottom: 14px;
+}
+.sidebar .sb-brand h1 {
+  font-family: Georgia, "Songti SC", serif; font-size: 16px; font-weight: 500;
+  letter-spacing: 1.2px; color: #2a2a2a;
+}
+.sidebar .sb-brand .sb-sub {
+  font-size: 9px; color: #8a7f6f; letter-spacing: 1.2px;
+  text-transform: uppercase; margin-top: 4px;
+}
+.sb-nav { display: flex; flex-direction: column; }
+.sb-item {
+  padding: 11px 20px; font-size: 12px; color: #6a5f4f; cursor: pointer;
+  border-left: 3px solid transparent; user-select: none;
+  display: flex; align-items: center; gap: 10px; transition: all 0.15s;
+}
+.sb-item:hover { background: #ece4d2; color: #2a2a2a; }
+.sb-item.active {
+  background: #fff; color: #2a2a2a; border-left-color: #b89968;
+  font-weight: 600;
+}
+.sb-item .sb-num {
+  font-family: Georgia, serif; font-size: 10px; color: #b89968;
+  letter-spacing: 1px; min-width: 18px;
+}
+.sb-toggle {
+  display: none; position: fixed; top: 12px; left: 12px; z-index: 100;
+  background: #2a2a2a; color: #faf8f5; border: none;
+  width: 36px; height: 36px; border-radius: 4px; cursor: pointer; font-size: 16px;
+}
+.main-content { padding: 24px; max-width: 1400px; }
+
+/* ============== PAGE VISIBILITY ============== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ============== NOTES TEXTBOX ============== */
+.notes-block {
+  margin-top: 20px; padding: 16px; background: #fbf9f4;
+  border: 1px solid #e5e0d8; border-radius: 4px;
+}
+.notes-block .notes-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: #6a5f4f; font-weight: 600; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notes-block .notes-saved { font-size: 9px; color: #7a8a6a; font-style: italic; }
+.notes-block textarea {
+  width: 100%; min-height: 120px; padding: 10px 12px;
+  font-family: inherit; font-size: 12px; line-height: 1.5;
+  border: 1px solid #d8d2c4; border-radius: 3px; background: #fff;
+  color: #2a2a2a; resize: vertical;
+}
+.notes-block textarea:focus { outline: none; border-color: #b89968; }
+
+/* ============== RECENT POSTS ANALYTICS (Content Performance) ============== */
+.recent-posts-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e0d8; }
+.recent-posts-section h3 {
+  font-family: Georgia, serif; font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; color: #2a2a2a; margin-bottom: 4px;
+}
+.recent-posts-section .rp-sub { font-size: 11px; color: #8a7f6f; margin-bottom: 14px; }
+.recent-post-card {
+  border: 1px solid #ece6d8; border-radius: 4px; padding: 14px 16px;
+  margin-bottom: 12px; background: #fefdfa;
+}
+.rpc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 8px;
+}
+.rpc-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rpc-num {
+  font-family: Georgia, serif; font-size: 18px; color: #b89968; font-weight: 600;
+  min-width: 24px;
+}
+.rpc-platform {
+  font-size: 9px; padding: 3px 8px; border-radius: 8px;
+  background: #2a2a2a; color: #faf8f5; letter-spacing: 0.7px; text-transform: uppercase;
+}
+.rpc-account { font-size: 10px; color: #8a7f6f; text-transform: uppercase; letter-spacing: 0.5px; }
+.rpc-date { font-size: 10px; color: #8a7f6f; }
+.rpc-caption {
+  font-size: 12px; color: #2a2a2a; line-height: 1.5; margin: 8px 0 12px;
+  padding-bottom: 12px; border-bottom: 1px dashed #ece6d8;
+}
+.rpc-stats {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+  padding-bottom: 12px; border-bottom: 1px dashed #ece6d8; margin-bottom: 12px;
+}
+.rpc-stat { display: flex; flex-direction: column; }
+.rpc-stat .k { color: #a89e8c; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+.rpc-stat .v { font-family: Georgia, serif; color: #2a2a2a; font-size: 13px; margin-top: 2px; }
+.rpc-analysis {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+}
+.rpc-block {
+  padding: 10px 12px; border-radius: 3px; font-size: 11px;
+}
+.rpc-block.working {
+  background: #f0f4ea; border-left: 3px solid #7a8a6a;
+}
+.rpc-block.notworking {
+  background: #fdf3ee; border-left: 3px solid #c87856;
+}
+.rpc-block.improve {
+  background: #f3eee5; border-left: 3px solid #b89968;
+}
+.rpc-block .rpc-block-title {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+  font-weight: 600; margin-bottom: 6px;
+}
+.rpc-block.working .rpc-block-title { color: #5a7050; }
+.rpc-block.notworking .rpc-block-title { color: #a85a3a; }
+.rpc-block.improve .rpc-block-title { color: #8a6f3a; }
+.rpc-block ul { list-style: none; padding: 0; margin: 0; }
+.rpc-block li {
+  font-size: 11px; line-height: 1.45; color: #4a4035; margin-bottom: 5px;
+  padding-left: 12px; position: relative;
+}
+.rpc-block li:before {
+  content: "•"; position: absolute; left: 2px; color: inherit; opacity: 0.6;
+}
+.rpc-block li:last-child { margin-bottom: 0; }
+.rpc-link { font-size: 10px; color: #b89968; margin-top: 10px; display: inline-block; text-decoration: none; }
+.rpc-link:hover { color: #6a5f4f; text-decoration: underline; }
+
+/* ============== CONTENT BANK TOGGLE ============== */
+.cb-toggle-bar {
+  display: flex; gap: 8px; margin-bottom: 18px;
+  border-bottom: 1px solid #e5e0d8; padding-bottom: 14px;
+}
+.cb-toggle-btn {
+  padding: 10px 18px; font-size: 12px; cursor: pointer;
+  border: 1px solid #d8d2c4; background: #fff; color: #6a5f4f;
+  border-radius: 3px; font-family: inherit; letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 8px; transition: all 0.15s;
+}
+.cb-toggle-btn:hover { background: #f8f3e7; color: #2a2a2a; }
+.cb-toggle-btn.active {
+  background: #2a2a2a; color: #faf8f5; border-color: #2a2a2a;
+}
+.cb-toggle-btn .cb-icon { font-size: 14px; }
+.cb-view { display: none; }
+.cb-view.active { display: block; }
+
+/* My Own Ideas */
+.my-ideas-input-block {
+  margin-bottom: 18px; padding: 16px; background: #fbf9f4;
+  border: 1px solid #e5e0d8; border-radius: 4px;
+}
+.my-ideas-input-block textarea {
+  width: 100%; min-height: 100px; padding: 10px 12px;
+  font-family: inherit; font-size: 12px; line-height: 1.5;
+  border: 1px solid #d8d2c4; border-radius: 3px; background: #fff;
+  color: #2a2a2a; resize: vertical;
+}
+.my-ideas-input-block textarea:focus { outline: none; border-color: #b89968; }
+.my-ideas-input-block .mi-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+}
+.my-ideas-input-block .mi-hint { font-size: 10px; color: #8a7f6f; }
+.my-ideas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.my-idea-card {
+  border: 1px solid #ece6d8; border-radius: 3px;
+  padding: 12px 14px; background: #fefdfa; position: relative;
+}
+.my-idea-card .mi-text {
+  font-size: 12px; color: #2a2a2a; line-height: 1.5;
+  margin-bottom: 8px; white-space: pre-wrap; word-wrap: break-word;
+}
+.my-idea-card .mi-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: #8a7f6f; padding-top: 8px;
+  border-top: 1px dashed #ece6d8;
+}
+.my-idea-card .mi-delete {
+  background: transparent; border: 1px solid #d8d2c4; color: #a85a3a;
+  padding: 3px 8px; font-size: 10px; cursor: pointer; border-radius: 2px;
+  font-family: inherit;
+}
+.my-idea-card .mi-delete:hover { background: #fdf3ee; }
+.empty-ideas {
+  text-align: center; padding: 30px; color: #a89e8c;
+  font-size: 11px; font-style: italic;
+  border: 1px dashed #d8d2c4; border-radius: 4px;
+}
+
+/* ============== FILM WEEK BLANK INPUTS ============== */
+.film-card-blank {
+  border: 1px solid #ece6d8; border-radius: 3px; padding: 12px;
+  background: linear-gradient(180deg, #fefdfa 0%, #faf6ec 100%);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.film-card-blank .fcb-day {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+  color: #b89968; font-weight: 600;
+}
+.film-card-blank .fcb-date {
+  font-family: Georgia, serif; font-size: 14px; color: #2a2a2a;
+  margin-bottom: 4px;
+}
+.film-card-blank label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: #8a7f6f; font-weight: 600; margin-bottom: 2px;
+}
+.film-card-blank input[type=text], .film-card-blank textarea {
+  width: 100%; padding: 6px 8px; font-family: inherit; font-size: 11px;
+  border: 1px solid #d8d2c4; border-radius: 2px; background: #fff;
+  color: #2a2a2a; resize: vertical;
+}
+.film-card-blank textarea { min-height: 40px; }
+.film-card-blank input:focus, .film-card-blank textarea:focus {
+  outline: none; border-color: #b89968;
+}
+.film-card-blank .fcb-check {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: #6a5f4f; cursor: pointer; user-select: none;
+}
+.film-card-blank.filmed { opacity: 0.7; background: #f0f4ea; }
+
+@media (max-width: 1100px) {
+  .overview-grid { grid-template-columns: repeat(3, 1fr); }
+  .tab-body { grid-template-columns: 1fr; }
+  .film-grid { grid-template-columns: repeat(4, 1fr); }
+  .rpc-stats { grid-template-columns: repeat(3, 1fr); }
+  .rpc-analysis { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; top: 0; left: -240px; width: 220px; height: 100vh;
+    z-index: 90; transition: left 0.25s; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+  .sidebar.open { left: 0; }
+  .sb-toggle { display: block; }
+  .main-content { padding: 60px 16px 24px; }
+}
+@media (max-width: 760px) {
+  .overview-grid { grid-template-columns: 1fr 1fr; }
+  .idea-grid { grid-template-columns: 1fr; }
+  .my-ideas-grid { grid-template-columns: 1fr; }
+  .changed-grid { grid-template-columns: 1fr; }
+  .film-grid { grid-template-columns: 1fr 1fr; }
+  .dow-grid { font-size: 9px; }
+  .rpc-stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<button class="sb-toggle" id="sb-toggle" aria-label="Toggle menu">☰</button>
+
+<div class="app-shell">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <h1>ĒSEN</h1>
+      <div class="sb-sub">Command Center</div>
+    </div>
+    <nav class="sb-nav" id="sb-nav">
+      <div class="sb-item active" data-page="overview"><span class="sb-num">01</span> Overview</div>
+      <div class="sb-item" data-page="performance"><span class="sb-num">02</span> Content Performance</div>
+      <div class="sb-item" data-page="bank"><span class="sb-num">03</span> Content Bank</div>
+      <div class="sb-item" data-page="weekly"><span class="sb-num">04</span> Weekly Planner</div>
+      <div class="sb-item" data-page="film"><span class="sb-num">05</span> What to Film</div>
+      <div class="sb-item" data-page="changed"><span class="sb-num">06</span> What Changed</div>
+    </nav>
+  </aside>
+
+  <!-- ============== MAIN CONTENT ============== -->
+  <main class="main-content">
+
+    <div class="snapshot-banner">
+      <div>
+        <span class="pill">Snapshot</span>&nbsp;&nbsp;
+        Data captured from Windsor.ai on <b id="snap-when">—</b>. Date filters and tabs work fully — interactivity is preserved.
+      </div>
+      <div style="font-size:10px;color:#8a7f6f">
+        For live data, regenerate this dashboard in Cowork.
+      </div>
+    </div>
+
+    <div class="header">
+      <div class="brand">
+        <h1>ĒSEN ｜ Command Center</h1>
+        <div class="sub">Brand Operations · 微正式 Casual Formal · Team Edition</div>
+      </div>
+      <div class="controls">
+        <label>From</label>
+        <input type="date" id="date-from">
+        <label>To</label>
+        <input type="date" id="date-to">
+        <button class="btn ghost" id="apply">Apply</button>
+        <span class="timestamp" id="ts">—</span>
+      </div>
+    </div>
+
+    <div class="error" id="err"></div>
+
+    <!-- ============== PAGE 1: OVERVIEW ============== -->
+    <div class="page active" id="page-overview">
+      <div class="section">
+        <h2><span class="num">01</span> Overview</h2>
+        <div class="sub" id="window-label">—</div>
+        <div class="account-bar" id="account-bar">
+          <span class="ab-label">Account</span>
+          <span class="account-pill active" data-account="all">
+            <span class="ap-dot" style="background:linear-gradient(135deg,#b89968 50%,#7a8a6a 50%)"></span>All Accounts
+          </span>
+          <span class="account-pill" data-account="17841402153334146">
+            <span class="ap-dot" style="background:#b89968"></span>esenmagazine
+          </span>
+          <span class="account-pill" data-account="17841453260783171">
+            <span class="ap-dot" style="background:#7a8a6a"></span>esenmedical
+          </span>
+        </div>
+        <div class="overview-grid" id="overview"></div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Overview Notes</span>
+            <span class="notes-saved" id="notes-saved-overview"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_overview" placeholder="Jot down observations about this snapshot — what stood out, what to look at next..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PAGE 2: CONTENT PERFORMANCE ============== -->
+    <div class="page" id="page-performance">
+      <div class="section">
+        <h2><span class="num">02</span> Content Performance</h2>
+        <div class="sub">Top posts, what's working, what's not — filtered by content format and the account selected above.</div>
+        <div class="tab-bar" id="format-tabs"></div>
+        <div class="tab-body">
+          <div class="tab-pane">
+            <h3><span class="ind top"></span>Top posts</h3>
+            <div id="top-posts"></div>
+          </div>
+          <div class="tab-pane">
+            <h3><span class="ind win"></span>What's working</h3>
+            <div id="whats-working"></div>
+          </div>
+          <div class="tab-pane">
+            <h3><span class="ind lose"></span>What's not</h3>
+            <div id="whats-not"></div>
+          </div>
+        </div>
+
+        <!-- 5 Recent Posts with full analytics -->
+        <div class="recent-posts-section">
+          <h3>5 Most Recent Posts · Per-Post Analytics</h3>
+          <div class="rp-sub">Detailed breakdown for your latest 5 posts — what's working, what's not, and how to improve.</div>
+          <div id="recent-posts-list"></div>
+        </div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Performance Notes</span>
+            <span class="notes-saved" id="notes-saved-performance"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_performance" placeholder="Patterns you're noticing, hypotheses to test, posts to revisit..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PAGE 3: CONTENT BANK ============== -->
+    <div class="page" id="page-bank">
+      <div class="section">
+        <h2><span class="num">03</span> Content Bank</h2>
+        <div class="sub">Switch between AI-generated recommendations from your winning patterns, or capture your own ideas.</div>
+
+        <div class="cb-toggle-bar">
+          <button class="cb-toggle-btn active" id="cb-btn-rec" data-view="rec">
+            <span class="cb-icon">💡</span> Recommendations
+          </button>
+          <button class="cb-toggle-btn" id="cb-btn-mine" data-view="mine">
+            <span class="cb-icon">✏️</span> My Own Ideas
+          </button>
+        </div>
+
+        <!-- Recommendations view -->
+        <div class="cb-view active" id="cb-view-rec">
+          <div class="idea-grid" id="content-bank"></div>
+        </div>
+
+        <!-- My Own Ideas view -->
+        <div class="cb-view" id="cb-view-mine">
+          <div class="my-ideas-input-block">
+            <div class="notes-label" style="margin-bottom: 8px;">
+              <span>Capture a new idea</span>
+            </div>
+            <textarea id="my-idea-input" placeholder="Write your own content idea here — hook, angle, format, anything that comes to mind..."></textarea>
+            <div class="mi-actions">
+              <span class="mi-hint">Saved locally on this device.</span>
+              <button class="btn" id="my-idea-add">Add Idea</button>
+            </div>
+          </div>
+          <div id="my-ideas-list"></div>
+        </div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Content Bank Notes</span>
+            <span class="notes-saved" id="notes-saved-bank"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_bank" placeholder="Themes you want to explore, ideas to revisit, content pillars..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PAGE 4: WEEKLY PLANNER ============== -->
+    <div class="page" id="page-weekly">
+      <div class="section">
+        <h2><span class="num">04</span> Weekly Planner · Content Rhythm</h2>
+        <div class="sub">Posting cadence and average performance by day of week (UTC+8). Aggregated across both accounts.</div>
+        <div class="dow-grid" id="dow-grid"></div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Weekly Planner Notes</span>
+            <span class="notes-saved" id="notes-saved-weekly"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_weekly" placeholder="Cadence experiments, day-of-week observations..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PAGE 5: WHAT TO FILM ============== -->
+    <div class="page" id="page-film">
+      <div class="section">
+        <h2><span class="num">05</span> What to Film This Week</h2>
+        <div class="sub" id="film-window">Plan the next 7 days of filming — fill in each day as you go.</div>
+        <div class="film-grid" id="film-grid"></div>
+
+        <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn ghost" id="film-reset">Reset Week</button>
+        </div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Filming Notes</span>
+            <span class="notes-saved" id="notes-saved-film"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_film" placeholder="Equipment, locations, talent, props to prep..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PAGE 6: WHAT CHANGED ============== -->
+    <div class="page" id="page-changed">
+      <div class="section">
+        <h2><span class="num">06</span> What Changed · Rising & Declining</h2>
+        <div class="sub" id="changed-window">—</div>
+        <div class="changed-grid">
+          <div class="changed-col rising"><h3>↗ Rising</h3><div id="rising"></div></div>
+          <div class="changed-col falling"><h3>↘ Declining</h3><div id="falling"></div></div>
+        </div>
+
+        <div class="notes-block">
+          <div class="notes-label">
+            <span>Trend Notes</span>
+            <span class="notes-saved" id="notes-saved-changed"></span>
+          </div>
+          <textarea data-notes-key="esen_notes_changed" placeholder="Why is this rising? Why is this falling? What to test next..."></textarea>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================================
+   EMBEDDED DATA SNAPSHOT
+   Captured from Windsor.ai Instagram connector.
+   ============================================================================ */
+const SNAPSHOT_AT = "2026-05-02T00:00:00Z";
+const SNAPSHOT_FROM = "2026-02-02";
+const SNAPSHOT_TO = "2026-05-02";
+
+const EMBEDDED_CURRENT = [
+  {"account_id":"17841453260783171","account_name":"esenmedical","followers_count":13532,"media_count":125},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","followers_count":94687,"media_count":779}
+];
+
+const EMBEDDED_MEDIA = [
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18040073771742622","timestamp":"2026-02-08T11:52:11+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"大家都在討論的 Wellness ，ĒSEN 創辦人 Dr. Wilson 這樣說！\n\n在 Dr. Wilson 鄒為之醫師眼中，健康源自對生命質感的重視。他長期臨床經驗觀察到，許多慢性疾病與身心失衡，並非突如其來，而是日常中被忽略的細微變化所累積。\n\n他認為，wellness 來自適度留白與平衡，留意那些在不知不覺中消耗身心的生活方式。\n\n當我們能順應生理節奏，有意識地與壓力與身體相處，自然會回到協調、穩定的 feel well 狀態，建造能夠支持長久健康的 Wellness lifestyle。","media_permalink":"https://www.instagram.com/p/DUfvSDfiOmB/","media_like_count":887,"media_comments_count":152,"media_reach":28417,"media_engagement":1752,"media_saved":346,"media_shares":346,"media_views":72880,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18062684795318113","timestamp":"2026-02-10T11:57:14+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"轉發給你那個愛傳宵夜文的朋友 🍜\n\n研究顯示，當白天身體與情緒需求長時間沒有被處理，為了維持心理與行為穩定，到了深夜，大腦會啟動補償性機制，尋求能立即提升多巴胺的刺激。\n\n生活中的代償 Red Flag\n🚩 工作經常壓抑真實情緒，忘記保留時間沈澱\n🚩 半夜特別想吃垃圾食物、滑手機好幾個小時不睡\n🚩 身體明明很累，卻怎麼也睡不著","media_permalink":"https://www.instagram.com/p/DUk5ctziDyW/","media_like_count":1216,"media_comments_count":111,"media_reach":25678,"media_engagement":2613,"media_saved":527,"media_shares":701,"media_views":50725,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17865048060573422","timestamp":"2026-02-11T12:02:38+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"過去一整年大家最煩惱的，原來是這個？\n\n健康不只是新年祝賀語，更是需要在生活中被理解、被實踐的狀態。ĒSEN 回顧年度五大健康議題，面對困擾，新的開始我們要更有把握、更有方向！\n\n2025 熱門討論度 TOP 5：\n➎ 地磁風暴讓你失眠又嗜睡\n➍ 五個習慣準則降低神經退化風險\n➌ 塑膠微粒風暴，大腦濃度最高\n➋ 別以為是憂鬱症，25% 男性受更年期影響","media_permalink":"https://www.instagram.com/p/DUne3LDCEZS/","media_like_count":99,"media_comments_count":22,"media_reach":5883,"media_engagement":173,"media_saved":32,"media_shares":19,"media_views":15732,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17994633845871409","timestamp":"2026-02-13T12:06:08+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"你還在暈嗎？\n\n愛情，可能都是神經內分泌系統惹的禍？那些被稱為命中註定的感覺，其實是生理訊號被大腦重新詮釋。\n\n🧠 研究顯示 —— 愛情的發生，跟這三種物質有關：\n❝ 多巴胺－集中注意力，充滿想要了解對方的動力\n❝ 去甲腎上腺素－心率增加、瞳孔放大、食慾抑制\n❝ 血清素水平下降－抑制對多餘資訊的過濾能力，降低理性\n\n而暈船、心碎，也能用醫學的生理現象解釋？健康的關係，又會有哪些身心徵兆？","media_permalink":"https://www.instagram.com/p/DUso2mtghvb/","media_like_count":1134,"media_comments_count":56,"media_reach":34816,"media_engagement":2751,"media_saved":806,"media_shares":715,"media_views":64094,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18057516662380341","timestamp":"2026-02-16T03:48:23+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"親戚問近況，先讓他看這篇！\n\n過年回家，大家更新狀態，難免冒出比較或焦慮。但根據生物策略研究，這其實是本質不相容的誤會。\n\n🧬 人生節律並非隨機，基因會根據環境能量控管：\n• 快策略 (Fast Strategy)：傾向早期擴張，快速適應環境並獲取資源。\n• 慢策略 (Slow Strategy)：傾向長線佈局，將能量優先投資在神經連結精細化與心理韌性的建立。\n\n理解基因多樣性，在合適時間點做最適合自身的決定，就是活出自己最高階的人生。","media_permalink":"https://www.instagram.com/p/DUzeRlxiBoA/","media_like_count":291,"media_comments_count":12,"media_reach":10125,"media_engagement":511,"media_saved":122,"media_shares":78,"media_views":30477,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17886895242333789","timestamp":"2026-02-22T12:00:21+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"還不想面對🫣\n\n年後大量運動，真的能有效瘦身嗎？\n\n研究顯示，大魚大肉後，身體處於發炎與高氧化壓力狀態。此時若進行如極端高強度訓練，反而增加皮質醇分泌，讓脂肪更難代謝。\n\n用哪些緩和方式能排解體內油脂？又如何在對的時機，用低強度運動改善身體狀況？\n\n結合醫療團隊的評估，做專業的引導，讓恢復有效率且持續穩定。","media_permalink":"https://www.instagram.com/p/DVDzWDfiMwS/","media_like_count":313,"media_comments_count":42,"media_reach":12027,"media_engagement":633,"media_saved":121,"media_shares":154,"media_views":34655,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18122895502568426","timestamp":"2026-02-26T11:59:06+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"只是想要一個擁抱 💔\n\n根據研究，Punchi 與布偶的互動，觸動了我們對安全依附（Secure Attachment）的意識。人類的大腦被設定為「必須與他人連結」，是一種無法逃避的本能。\n\n我們以為孤獨可以靠理智克服，但事實上本能需要的，其實是安全感。如果缺乏，我們會下意識轉向其他替代依託。\n\n🐒 現代社會中的「布偶媽媽」：\n· 數位依附 \n· 購物與囤積\n· 過度工作 \n· 單向情感依附","media_permalink":"https://www.instagram.com/p/DVOGYXOiC4o/","media_like_count":3865,"media_comments_count":69,"media_reach":71781,"media_engagement":6211,"media_saved":1108,"media_shares":993,"media_views":135859,"media_reel_avg_watch_time":null},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"17995199999875778","timestamp":"2026-03-03T10:34:41+0000","media_type":"REELS","media_product_type":"REELS","media_caption":"Our very first ĒSEN Club Salon. It was more than an event.\n\nWe created a space where we exchanged ideas and built meaningful connections.\n\nTo every distinguished guest and friend who joined us — thank you for pausing amidst your busy lives to prioritize your health.\n\nWe believe true preventive medicine is a long-term journey we walk together.\n\n那天，我們不只是舉辦了一場活動。我們創造了一個讓理念被聽見、讓關係被建立的場域。我們相信，真正的預防醫學，是走入生活當中。","media_permalink":"https://www.instagram.com/reel/DVa0W27kp1m/","media_like_count":51,"media_comments_count":2,"media_reach":4090,"media_engagement":72,"media_saved":9,"media_shares":10,"media_views":4855,"media_reel_avg_watch_time":8054},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"18006254402846065","timestamp":"2026-03-06T12:01:15+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"Although the event has come to an end, the conversations and energy from that day continue to live on.\n\nSpecial thanks to Jacky for his wholehearted support—sharing his personal health journey and inspiring others to care more about their own well-being.\n\n活動雖然落幕，但當天的交流與能量仍在延續。每一段真實的分享，都讓我們更加相信，預防醫學不只是理念，而是一種可以被實踐的生活方式。","media_permalink":"https://www.instagram.com/p/DVis_JNEogf/","media_like_count":132,"media_comments_count":0,"media_reach":7506,"media_engagement":149,"media_saved":10,"media_shares":7,"media_views":18780,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18087428732223832","timestamp":"2026-03-08T12:02:28+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"所有的痛都不能忽視\n\n邀請到伊生診所院長·台大家醫科鄭佳瑤醫師跟我們分享\n\n🍫 巧克力囊腫是什麼？當經期間有子宮內膜組織未完全排出，逆流進入卵巢，使內膜細胞在卵巢或盆腔「生了根」。這是一個盛行率高達 10%，與雌激素、基因和環境密切相關的慢性發炎疾病。\n\n環境荷爾蒙：塑化劑、重金屬等環境荷爾蒙的干擾。長期心理壓力容易導致荷爾蒙失調。早期診斷，精準管理。","media_permalink":"https://www.instagram.com/p/DVn2txgiCnM/","media_like_count":178,"media_comments_count":2,"media_reach":12700,"media_engagement":323,"media_saved":71,"media_shares":69,"media_views":35652,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18413234467121474","timestamp":"2026-03-13T12:01:56+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"乳房發現硬塊，先不要緊張！\n\n當體內雌激素水平相對較高，或乳腺細胞上的雌激素受體過於活躍時，乳房中可能長出纖維腺瘤。腺瘤的形狀多為橢圓形，直徑約 1 至 3 公分，通常為良性，但仍需要持續觀察與留意。\n\n纖維腺瘤的形成，常與體內雌激素與環境荷爾蒙有關。若發現腫塊在 3–6 個月內明顯變大，建議儘早尋求醫師評估。","media_permalink":"https://www.instagram.com/p/DV0uoTZiMFH/","media_like_count":425,"media_comments_count":41,"media_reach":20756,"media_engagement":1052,"media_saved":236,"media_shares":338,"media_views":54355,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17858921250670249","timestamp":"2026-03-15T00:50:12+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"大谷可以 我也可以？\n\n大谷翔平在 WBC 展現的精準球技，除了苦練，睡眠更是他的核心系統！\n\n｜大谷的睡眠模式\n10+2 模式：晚間 10 小時 + 賽前 2 小時午覺\n環境恆定：專屬客製化床墊隨行，將變因降為零\n精神回報：極致睡眠帶來神經傳導精準度與肌肉修復\n\n睡眠時，腦細胞會縮小以騰出空間，讓液體沖刷掉白天的蛋白質廢物。晚睡者只要不被外界干擾，並維持作息規律，同樣能完成完整的深層睡眠與REM 週期，達成大腦修復。","media_permalink":"https://www.instagram.com/p/DV4rWLLiGwV/","media_like_count":4978,"media_comments_count":86,"media_reach":84897,"media_engagement":7924,"media_saved":1622,"media_shares":1124,"media_views":177495,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17997497018749154","timestamp":"2026-03-17T12:00:00+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"減重針不是魔法棒\n\n最近討論度最高的瘦瘦針與猛健樂。\n\n💉瘦瘦針：延緩胃部排空，抑制大腦食慾中樞，達到減少進食量並穩定血糖的效果\n💉猛健樂：同時模擬 GLP-1 與 GIP 兩種荷爾蒙，除了抑制食慾，更直接優化脂肪代謝效率與胰島素敏感度\n\n若未經專業評估而自行施打，可能對身體造成負面影響：肌肉流失、營養品質下降、停藥反彈。透過生活醫學的介入，針對荷爾蒙、肌肉量、生活型態進行精準評估。","media_permalink":"https://www.instagram.com/p/DV_Bm_OiEnD/","media_like_count":493,"media_comments_count":37,"media_reach":25065,"media_engagement":1058,"media_saved":183,"media_shares":328,"media_views":66348,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17845081131695941","timestamp":"2026-03-22T12:01:07+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"真正好皮膚的關鍵是 —\n\n多數現代人長期處於作息失衡狀態，讓細胞修復效率下降，並轉向慢性發炎，更進一步加速皮膚糖化與更新停滯。\n\n🧠 研究發現，年輕不一定代謝好。當皮膚暗沉、蠟黃、冒痘或傷口難癒合，很可能是：胰島素敏感度下降、皮質醇節律失調、生長激素與自噬作用停滯。","media_permalink":"https://www.instagram.com/p/DWL5sOriEhv/","media_like_count":220,"media_comments_count":58,"media_reach":10223,"media_engagement":539,"media_saved":165,"media_shares":92,"media_views":30140,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18092427908515958","timestamp":"2026-03-24T11:59:17+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"隱形殺手在哪裡\n\n多啦Ａ夢電影版的日本動畫師－芝山努因肺癌過世。肺癌為台灣國病、癌症致死率蟬聯冠軍，其實跟這些環境因素息息相關。\n\n生活中需要留意的細節不可少，ĒSEN 也準備了針對防癌抗老的中藥萃取包。有肺癌相關疑難雜症，及早發現、諮詢醫師，就能有效降低肺癌對生活造成的影響。","media_permalink":"https://www.instagram.com/p/DWRDEjFiCgj/","media_like_count":1731,"media_comments_count":102,"media_reach":49422,"media_engagement":4577,"media_saved":769,"media_shares":1900,"media_views":103097,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18046222676723864","timestamp":"2026-04-01T11:00:40+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"專注是最難的事\n\nAI與通訊科技進步，同時間處理多項任務已成常態，科學研究發現，長期下來會造成大腦沈重負荷。\n\n🧠 現代科技對大腦的衝擊\n・AI 雙面刃：人類大腦每日的決策能量有限，過多的選擇會誘發決策疲勞（Decision Fatigue）\n・通訊碎片化：即時通訊軟體強制中斷心流狀態，部分注意力仍停留在前面任務，導致認知殘留\n\n避免過勞崩潰Burnout，是我們正共同面對的議題。","media_permalink":"https://www.instagram.com/p/DWliuNwCOf8/","media_like_count":1055,"media_comments_count":14,"media_reach":28288,"media_engagement":2204,"media_saved":573,"media_shares":518,"media_views":59740,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18079906736565394","timestamp":"2026-04-09T11:00:30+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"隨時隨地減壓法🧘\n\n世界 STRESS AWARENESS MONTH 2026 關注話題：「生理調節」 — 透過自主神經系統、平衡壓力荷爾蒙，修復受損的生理指標。\n\n冥想被視為主動性生理調節的代表：\n① 咖啡 / 飲水冥想：將這幾分鐘視為純粹的感官時間\n② Box Breathing 方塊呼吸法：吸氣 4 秒、憋氣 4 秒\n③ 鍵盤 / 步行冥想：將注意力從目的地移回動作過程","media_permalink":"https://www.instagram.com/p/DW6JD77iJnV/","media_like_count":615,"media_comments_count":15,"media_reach":13536,"media_engagement":1336,"media_saved":366,"media_shares":316,"media_views":33035,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18044796272753893","timestamp":"2026-04-14T10:58:26+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"你也會去嗎？\n\n📍 白沙屯媽祖：4/12 — 4/20 \n📍 大甲媽祖：4/17 — 4/26 \n\n若長時間行走或未適當休息，容易造成體能過度消耗，甚至引發足底筋膜炎、關節受損等身體狀況。\n\n如果你參與遶境，或正深受長期肌肉痠痛困擾，建議與專業醫師討論修復方式，從根本進行有效的治療與保養。","media_permalink":"https://www.instagram.com/p/DXHAzOwAn42/","media_like_count":901,"media_comments_count":15,"media_reach":23635,"media_engagement":1237,"media_saved":168,"media_shares":145,"media_views":56894,"media_reel_avg_watch_time":null},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"17856421242650969","timestamp":"2026-04-17T10:33:30+0000","media_type":"REELS","media_product_type":"REELS","media_caption":"You call it fatigue. But the body has its own language. You've just learned not to listen.\n\nTaking care of yourself isn't about filling your life. It's about realigning with your body.\n\n你以為只是疲憊，但身體一直有自己的語言，只是你習慣了忽略。\n\n照顧自己，不是填滿生活，而是重新對齊身體。","media_permalink":"https://www.instagram.com/reel/DXOr8ozkvXW/","media_like_count":18,"media_comments_count":0,"media_reach":1751,"media_engagement":28,"media_saved":2,"media_shares":6,"media_views":1936,"media_reel_avg_watch_time":11118},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"18065220989690350","timestamp":"2026-04-20T09:37:49+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"你的血管不是流行配件。Your veins aren't a fashion statement.\n\n點滴療程在社群媒體上大受歡迎，但 ĒSEN 想提醒大家：營養介入屬於醫療行為。在缺乏醫師評估的坊間「點滴吧」施打，除了有感染風險，更可能因為不了解自身代謝狀況而造成身體負擔。\n\n在 ĒSEN，我們不提供「美容點滴」，我們提供的是「生活醫學」。每一瓶 Boost® 營養點滴都由醫師親自評估、科學配方調製。\n\nWe practice Lifestyle Medicine not beauty hacks. Every Boost® session is doctor-supervised and evidence-based.","media_permalink":"https://www.instagram.com/p/DXWUV_PEkdi/","media_like_count":53,"media_comments_count":0,"media_reach":2904,"media_engagement":86,"media_saved":17,"media_shares":16,"media_views":7772,"media_reel_avg_watch_time":null},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"18097983473016331","timestamp":"2026-04-21T10:22:25+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"「多吃青菜對身體好🥬」這句話，可能正在摧毀你的健康？\n\n你是不是每天努力吃沙拉、喝綠拿鐵，結果：\n❌ 皮膚過敏、濕疹反覆發作\n❌ 莫名其妙的關節疼痛\n❌ 肚子整天脹氣、消化不良\n❌ 睡再久還是覺得好累\n\n真相是：你以為的營養，可能是你身體的「發炎元兇」。當你攝取了不適合自己的植物凝集素或草酸，身體就像每天在進行一場無止盡的「排毒苦戰」。\n\nĒSEN 全方位過敏評估服務：精準檢測涵蓋 224 項 IgE/IgG 檢測。","media_permalink":"https://www.instagram.com/p/DXY-PgLkiSt/","media_like_count":86,"media_comments_count":1,"media_reach":3113,"media_engagement":160,"media_saved":43,"media_shares":28,"media_views":8534,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17875336587592692","timestamp":"2026-04-21T11:59:41+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"咖啡也能讓我過敏？\n\n台灣每兩人就有一人過敏，但真正的原因，很可能藏在不曾注意到的環境中？\n\n長期受到過敏、試過各式療法卻無法確實改善、或防治復發，除了留意潮濕對環境的影響，更要從源頭做改變，根治慢性發炎困擾。","media_permalink":"https://www.instagram.com/p/DXZJX4xiA0R/","media_like_count":377,"media_comments_count":62,"media_reach":12050,"media_engagement":871,"media_saved":139,"media_shares":278,"media_views":32694,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18402484645146709","timestamp":"2026-04-22T12:12:28+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"還在跟自己過不去嗎？\n\n你能辨認內耗的徵兆與原因？根據研究，容易內耗可能與神經變異性有關。\n\n理解大腦運作的科學規律，建立與生理特質相符的生活節奏，在理性基礎上，給自己完整的接納與照顧。","media_permalink":"https://www.instagram.com/p/DXbvobyCEYe/","media_like_count":2056,"media_comments_count":462,"media_reach":36491,"media_engagement":5101,"media_saved":1305,"media_shares":1183,"media_views":73639,"media_reel_avg_watch_time":null},
+  {"account_id":"17841453260783171","account_name":"esenmedical","media_id":"18106998248501601","timestamp":"2026-04-28T09:40:35+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"為什麼紅光能成為全方位的健康方案？\n\n不僅僅是照光，這是一場細胞層級的「充電」。紅光療法（Red Light Therapy）的核心在於「光生物調節技術」，透過特定波長的紅光與近紅外光，直接啟動細胞線粒體，為身體注入修復能量。\n\n✨ 肌膚抗老與膠原蛋白：透過 630–850 nm 波長，支持纖維母細胞活性\n✨ 痤瘡與發炎肌膚：結合藍光與紅光，深層鎮靜\n✨ 雄性禿與毛囊密度：低能量光療法刺激毛囊活性\n✨ 傷口修復與局部止痛：非侵入式輔助療法","media_permalink":"https://www.instagram.com/p/DXq7BOJElCb/","media_like_count":66,"media_comments_count":0,"media_reach":1659,"media_engagement":123,"media_saved":31,"media_shares":26,"media_views":4305,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"17994288338948924","timestamp":"2026-04-28T12:03:15+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"別小看第六感\n\n根據研究，壓力更容易反應在女性身上，雌激素與 HPA 軸靈敏讓女性容易感到焦慮，卻擁有天生優勢。\n\n當透過專業醫學了解賀爾蒙代謝與神經傳導特質，不再用意志力對抗壓力信號，且更懂得妥善運用靈敏的天性，這份敏銳將不再是內耗，而是重拾生命韌性的最強天賦。","media_permalink":"https://www.instagram.com/p/DXrLWIyCD4m/","media_like_count":231,"media_comments_count":7,"media_reach":6667,"media_engagement":385,"media_saved":83,"media_shares":55,"media_views":18475,"media_reel_avg_watch_time":null},
+  {"account_id":"17841402153334146","account_name":"esenmagazine","media_id":"18153832561461437","timestamp":"2026-04-29T12:03:37+0000","media_type":"CAROUSEL_ALBUM","media_product_type":"FEED","media_caption":"真正的老不是年齡？\n\n紫外線、藍光與高壓，正以前所未有的速度消耗你的生物資源。\n\n根據研究，老化不只是時間的刻痕，更是粒線體能量衰退與慢性發炎的連鎖反應。\n\n理解生理運作的科學規律，透過精準醫療介入，重啟細胞的修復本能。在忙碌的賽道上，給予身體應有的深度自我投資。","media_permalink":"https://www.instagram.com/p/DXtwLvQiLjV/","media_like_count":252,"media_comments_count":23,"media_reach":12305,"media_engagement":536,"media_saved":171,"media_shares":86,"media_views":28191,"media_reel_avg_watch_time":null}
+];
+
+const EMBEDDED_DAILY = [
+{"account_id":"17841402153334146","date":"2026-02-02","reach":1666,"accounts_engaged":107,"total_interactions":165,"saves":18},{"account_id":"17841453260783171","date":"2026-02-02","reach":433,"accounts_engaged":2,"total_interactions":0,"saves":0},
+{"account_id":"17841402153334146","date":"2026-02-03","reach":918,"accounts_engaged":78,"total_interactions":122,"saves":15},{"account_id":"17841453260783171","date":"2026-02-03","reach":593,"accounts_engaged":2,"total_interactions":2,"saves":1},
+{"account_id":"17841402153334146","date":"2026-02-04","reach":1418,"accounts_engaged":82,"total_interactions":136,"saves":13},{"account_id":"17841453260783171","date":"2026-02-04","reach":184,"accounts_engaged":3,"total_interactions":3,"saves":1},
+{"account_id":"17841402153334146","date":"2026-02-05","reach":1418,"accounts_engaged":82,"total_interactions":106,"saves":12},{"account_id":"17841453260783171","date":"2026-02-05","reach":192,"accounts_engaged":2,"total_interactions":5,"saves":0},
+{"account_id":"17841402153334146","date":"2026-02-06","reach":5305,"accounts_engaged":86,"total_interactions":140,"saves":23},{"account_id":"17841453260783171","date":"2026-02-06","reach":7525,"accounts_engaged":18,"total_interactions":21,"saves":5},
+{"account_id":"17841402153334146","date":"2026-02-07","reach":7548,"accounts_engaged":52,"total_interactions":75,"saves":3},{"account_id":"17841453260783171","date":"2026-02-07","reach":7474,"accounts_engaged":5,"total_interactions":5,"saves":2},
+{"account_id":"17841402153334146","date":"2026-02-08","reach":11729,"accounts_engaged":627,"total_interactions":913,"saves":113},{"account_id":"17841453260783171","date":"2026-02-08","reach":70,"accounts_engaged":3,"total_interactions":3,"saves":0},
+{"account_id":"17841402153334146","date":"2026-02-09","reach":6818,"accounts_engaged":276,"total_interactions":426,"saves":48},{"account_id":"17841453260783171","date":"2026-02-09","reach":114,"accounts_engaged":4,"total_interactions":12,"saves":2},
+{"account_id":"17841402153334146","date":"2026-02-10","reach":15133,"accounts_engaged":996,"total_interactions":1595,"saves":272},{"account_id":"17841453260783171","date":"2026-02-10","reach":321,"accounts_engaged":4,"total_interactions":5,"saves":2},
+{"account_id":"17841402153334146","date":"2026-02-11","reach":8486,"accounts_engaged":486,"total_interactions":759,"saves":110},{"account_id":"17841453260783171","date":"2026-02-11","reach":909,"accounts_engaged":17,"total_interactions":29,"saves":7},
+{"account_id":"17841402153334146","date":"2026-02-12","reach":4039,"accounts_engaged":300,"total_interactions":540,"saves":84},{"account_id":"17841453260783171","date":"2026-02-12","reach":363,"accounts_engaged":8,"total_interactions":13,"saves":4},
+{"account_id":"17841402153334146","date":"2026-02-13","reach":14660,"accounts_engaged":1046,"total_interactions":1715,"saves":330},{"account_id":"17841453260783171","date":"2026-02-13","reach":811,"accounts_engaged":46,"total_interactions":58,"saves":3},
+{"account_id":"17841402153334146","date":"2026-02-14","reach":10690,"accounts_engaged":653,"total_interactions":1107,"saves":226},{"account_id":"17841453260783171","date":"2026-02-14","reach":361,"accounts_engaged":13,"total_interactions":12,"saves":2},
+{"account_id":"17841402153334146","date":"2026-02-15","reach":9956,"accounts_engaged":555,"total_interactions":897,"saves":181},{"account_id":"17841453260783171","date":"2026-02-15","reach":101,"accounts_engaged":3,"total_interactions":3,"saves":1},
+{"account_id":"17841402153334146","date":"2026-02-16","reach":6901,"accounts_engaged":328,"total_interactions":515,"saves":98},{"account_id":"17841453260783171","date":"2026-02-16","reach":42,"accounts_engaged":5,"total_interactions":7,"saves":0},
+{"account_id":"17841402153334146","date":"2026-02-17","reach":5536,"accounts_engaged":302,"total_interactions":485,"saves":82},{"account_id":"17841453260783171","date":"2026-02-17","reach":30,"accounts_engaged":2,"total_interactions":2,"saves":1},
+{"account_id":"17841402153334146","date":"2026-02-18","reach":4569,"accounts_engaged":217,"total_interactions":389,"saves":68},{"account_id":"17841453260783171","date":"2026-02-18","reach":53,"accounts_engaged":19,"total_interactions":30,"saves":8},
+{"account_id":"17841402153334146","date":"2026-02-19","reach":5212,"accounts_engaged":204,"total_interactions":308,"saves":67},{"account_id":"17841453260783171","date":"2026-02-19","reach":37,"accounts_engaged":49,"total_interactions":74,"saves":14},
+{"account_id":"17841402153334146","date":"2026-02-20","reach":3982,"accounts_engaged":166,"total_interactions":238,"saves":35},{"account_id":"17841453260783171","date":"2026-02-20","reach":75,"accounts_engaged":44,"total_interactions":79,"saves":7},
+{"account_id":"17841402153334146","date":"2026-02-21","reach":3274,"accounts_engaged":191,"total_interactions":301,"saves":43},{"account_id":"17841453260783171","date":"2026-02-21","reach":45,"accounts_engaged":71,"total_interactions":118,"saves":14},
+{"account_id":"17841402153334146","date":"2026-02-22","reach":10096,"accounts_engaged":498,"total_interactions":808,"saves":136},{"account_id":"17841453260783171","date":"2026-02-22","reach":218,"accounts_engaged":69,"total_interactions":112,"saves":30},
+{"account_id":"17841402153334146","date":"2026-02-23","reach":3989,"accounts_engaged":174,"total_interactions":384,"saves":40},{"account_id":"17841453260783171","date":"2026-02-23","reach":70,"accounts_engaged":45,"total_interactions":83,"saves":9},
+{"account_id":"17841402153334146","date":"2026-02-24","reach":3240,"accounts_engaged":118,"total_interactions":241,"saves":38},{"account_id":"17841453260783171","date":"2026-02-24","reach":39,"accounts_engaged":41,"total_interactions":71,"saves":19},
+{"account_id":"17841402153334146","date":"2026-02-25","reach":2115,"accounts_engaged":95,"total_interactions":161,"saves":20},{"account_id":"17841453260783171","date":"2026-02-25","reach":27,"accounts_engaged":46,"total_interactions":87,"saves":12},
+{"account_id":"17841402153334146","date":"2026-02-26","reach":19297,"accounts_engaged":1652,"total_interactions":2213,"saves":334},{"account_id":"17841453260783171","date":"2026-02-26","reach":454,"accounts_engaged":46,"total_interactions":60,"saves":10},
+{"account_id":"17841402153334146","date":"2026-02-27","reach":13595,"accounts_engaged":951,"total_interactions":1434,"saves":205},{"account_id":"17841453260783171","date":"2026-02-27","reach":359,"accounts_engaged":54,"total_interactions":92,"saves":10},
+{"account_id":"17841402153334146","date":"2026-02-28","reach":9597,"accounts_engaged":607,"total_interactions":903,"saves":157},{"account_id":"17841453260783171","date":"2026-02-28","reach":26,"accounts_engaged":44,"total_interactions":64,"saves":10},
+{"account_id":"17841402153334146","date":"2026-03-01","reach":11129,"accounts_engaged":352,"total_interactions":562,"saves":70},{"account_id":"17841453260783171","date":"2026-03-01","reach":24,"accounts_engaged":52,"total_interactions":78,"saves":8},
+{"account_id":"17841402153334146","date":"2026-03-02","reach":2630,"accounts_engaged":244,"total_interactions":396,"saves":50},{"account_id":"17841453260783171","date":"2026-03-02","reach":20,"accounts_engaged":64,"total_interactions":120,"saves":10},
+{"account_id":"17841402153334146","date":"2026-03-03","reach":2149,"accounts_engaged":202,"total_interactions":308,"saves":38},{"account_id":"17841453260783171","date":"2026-03-03","reach":1269,"accounts_engaged":86,"total_interactions":121,"saves":14},
+{"account_id":"17841402153334146","date":"2026-03-04","reach":2341,"accounts_engaged":213,"total_interactions":312,"saves":40},{"account_id":"17841453260783171","date":"2026-03-04","reach":390,"accounts_engaged":44,"total_interactions":66,"saves":6},
+{"account_id":"17841402153334146","date":"2026-03-05","reach":2316,"accounts_engaged":157,"total_interactions":200,"saves":29},{"account_id":"17841453260783171","date":"2026-03-05","reach":130,"accounts_engaged":24,"total_interactions":33,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-06","reach":2401,"accounts_engaged":209,"total_interactions":260,"saves":33},{"account_id":"17841453260783171","date":"2026-03-06","reach":2074,"accounts_engaged":99,"total_interactions":113,"saves":8},
+{"account_id":"17841402153334146","date":"2026-03-07","reach":2090,"accounts_engaged":176,"total_interactions":217,"saves":31},{"account_id":"17841453260783171","date":"2026-03-07","reach":1438,"accounts_engaged":45,"total_interactions":58,"saves":4},
+{"account_id":"17841402153334146","date":"2026-03-08","reach":9113,"accounts_engaged":406,"total_interactions":562,"saves":97},{"account_id":"17841453260783171","date":"2026-03-08","reach":466,"accounts_engaged":146,"total_interactions":241,"saves":40},
+{"account_id":"17841402153334146","date":"2026-03-09","reach":5231,"accounts_engaged":286,"total_interactions":419,"saves":66},{"account_id":"17841453260783171","date":"2026-03-09","reach":426,"accounts_engaged":45,"total_interactions":56,"saves":10},
+{"account_id":"17841402153334146","date":"2026-03-10","reach":3666,"accounts_engaged":175,"total_interactions":265,"saves":29},{"account_id":"17841453260783171","date":"2026-03-10","reach":309,"accounts_engaged":15,"total_interactions":19,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-11","reach":2535,"accounts_engaged":137,"total_interactions":206,"saves":30},{"account_id":"17841453260783171","date":"2026-03-11","reach":418,"accounts_engaged":29,"total_interactions":43,"saves":2},
+{"account_id":"17841402153334146","date":"2026-03-12","reach":1765,"accounts_engaged":72,"total_interactions":100,"saves":10},{"account_id":"17841453260783171","date":"2026-03-12","reach":320,"accounts_engaged":14,"total_interactions":18,"saves":4},
+{"account_id":"17841402153334146","date":"2026-03-13","reach":13707,"accounts_engaged":550,"total_interactions":970,"saves":150},{"account_id":"17841453260783171","date":"2026-03-13","reach":233,"accounts_engaged":19,"total_interactions":26,"saves":4},
+{"account_id":"17841402153334146","date":"2026-03-14","reach":19816,"accounts_engaged":1404,"total_interactions":2129,"saves":432},{"account_id":"17841453260783171","date":"2026-03-14","reach":220,"accounts_engaged":13,"total_interactions":20,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-15","reach":16000,"accounts_engaged":912,"total_interactions":1359,"saves":257},{"account_id":"17841453260783171","date":"2026-03-15","reach":675,"accounts_engaged":14,"total_interactions":22,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-16","reach":16733,"accounts_engaged":966,"total_interactions":1333,"saves":245},{"account_id":"17841453260783171","date":"2026-03-16","reach":288,"accounts_engaged":4,"total_interactions":11,"saves":0},
+{"account_id":"17841402153334146","date":"2026-03-17","reach":17569,"accounts_engaged":996,"total_interactions":1364,"saves":218},{"account_id":"17841453260783171","date":"2026-03-17","reach":126,"accounts_engaged":7,"total_interactions":9,"saves":3},
+{"account_id":"17841402153334146","date":"2026-03-18","reach":11424,"accounts_engaged":642,"total_interactions":865,"saves":130},{"account_id":"17841453260783171","date":"2026-03-18","reach":215,"accounts_engaged":13,"total_interactions":16,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-19","reach":6051,"accounts_engaged":372,"total_interactions":538,"saves":82},{"account_id":"17841453260783171","date":"2026-03-19","reach":287,"accounts_engaged":6,"total_interactions":4,"saves":3},
+{"account_id":"17841402153334146","date":"2026-03-20","reach":4957,"accounts_engaged":414,"total_interactions":570,"saves":88},{"account_id":"17841453260783171","date":"2026-03-20","reach":363,"accounts_engaged":10,"total_interactions":11,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-21","reach":5335,"accounts_engaged":341,"total_interactions":461,"saves":68},{"account_id":"17841453260783171","date":"2026-03-21","reach":192,"accounts_engaged":13,"total_interactions":15,"saves":5},
+{"account_id":"17841402153334146","date":"2026-03-22","reach":10425,"accounts_engaged":585,"total_interactions":785,"saves":164},{"account_id":"17841453260783171","date":"2026-03-22","reach":39,"accounts_engaged":3,"total_interactions":4,"saves":0},
+{"account_id":"17841402153334146","date":"2026-03-23","reach":5282,"accounts_engaged":277,"total_interactions":401,"saves":62},{"account_id":"17841453260783171","date":"2026-03-23","reach":34,"accounts_engaged":4,"total_interactions":9,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-24","reach":22664,"accounts_engaged":1388,"total_interactions":2466,"saves":278},{"account_id":"17841453260783171","date":"2026-03-24","reach":59,"accounts_engaged":1,"total_interactions":0,"saves":0},
+{"account_id":"17841402153334146","date":"2026-03-25","reach":17408,"accounts_engaged":998,"total_interactions":1819,"saves":235},{"account_id":"17841453260783171","date":"2026-03-25","reach":61,"accounts_engaged":5,"total_interactions":15,"saves":0},
+{"account_id":"17841402153334146","date":"2026-03-26","reach":8760,"accounts_engaged":515,"total_interactions":865,"saves":122},{"account_id":"17841453260783171","date":"2026-03-26","reach":674,"accounts_engaged":14,"total_interactions":17,"saves":1},
+{"account_id":"17841402153334146","date":"2026-03-27","reach":6641,"accounts_engaged":404,"total_interactions":667,"saves":98},{"account_id":"17841453260783171","date":"2026-03-27","reach":281,"accounts_engaged":5,"total_interactions":3,"saves":0},
+{"account_id":"17841402153334146","date":"2026-03-28","reach":7511,"accounts_engaged":390,"total_interactions":621,"saves":116},{"account_id":"17841453260783171","date":"2026-03-28","reach":720,"accounts_engaged":42,"total_interactions":60,"saves":16},
+{"account_id":"17841402153334146","date":"2026-03-29","reach":6512,"accounts_engaged":355,"total_interactions":599,"saves":92},{"account_id":"17841453260783171","date":"2026-03-29","reach":507,"accounts_engaged":29,"total_interactions":41,"saves":15},
+{"account_id":"17841402153334146","date":"2026-03-30","reach":6460,"accounts_engaged":294,"total_interactions":469,"saves":86},{"account_id":"17841453260783171","date":"2026-03-30","reach":419,"accounts_engaged":15,"total_interactions":27,"saves":7},
+{"account_id":"17841402153334146","date":"2026-03-31","reach":4382,"accounts_engaged":202,"total_interactions":291,"saves":68},{"account_id":"17841453260783171","date":"2026-03-31","reach":429,"accounts_engaged":17,"total_interactions":30,"saves":5},
+{"account_id":"17841402153334146","date":"2026-04-01","reach":12088,"accounts_engaged":801,"total_interactions":1236,"saves":230},{"account_id":"17841453260783171","date":"2026-04-01","reach":242,"accounts_engaged":10,"total_interactions":12,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-02","reach":6470,"accounts_engaged":349,"total_interactions":537,"saves":87},{"account_id":"17841453260783171","date":"2026-04-02","reach":601,"accounts_engaged":2,"total_interactions":3,"saves":3},
+{"account_id":"17841402153334146","date":"2026-04-03","reach":4806,"accounts_engaged":253,"total_interactions":394,"saves":70},{"account_id":"17841453260783171","date":"2026-04-03","reach":721,"accounts_engaged":4,"total_interactions":4,"saves":1},
+{"account_id":"17841402153334146","date":"2026-04-04","reach":4816,"accounts_engaged":273,"total_interactions":402,"saves":69},{"account_id":"17841453260783171","date":"2026-04-04","reach":37,"accounts_engaged":2,"total_interactions":3,"saves":1},
+{"account_id":"17841402153334146","date":"2026-04-05","reach":3578,"accounts_engaged":190,"total_interactions":332,"saves":42},{"account_id":"17841453260783171","date":"2026-04-05","reach":23,"accounts_engaged":2,"total_interactions":3,"saves":0},
+{"account_id":"17841402153334146","date":"2026-04-06","reach":2648,"accounts_engaged":146,"total_interactions":252,"saves":45},{"account_id":"17841453260783171","date":"2026-04-06","reach":23,"accounts_engaged":3,"total_interactions":3,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-07","reach":1657,"accounts_engaged":110,"total_interactions":247,"saves":37},{"account_id":"17841453260783171","date":"2026-04-07","reach":34,"accounts_engaged":5,"total_interactions":6,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-08","reach":1460,"accounts_engaged":99,"total_interactions":172,"saves":30},{"account_id":"17841453260783171","date":"2026-04-08","reach":47,"accounts_engaged":4,"total_interactions":9,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-09","reach":8380,"accounts_engaged":631,"total_interactions":986,"saves":182},{"account_id":"17841453260783171","date":"2026-04-09","reach":44,"accounts_engaged":4,"total_interactions":9,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-10","reach":3350,"accounts_engaged":181,"total_interactions":288,"saves":54},{"account_id":"17841453260783171","date":"2026-04-10","reach":44,"accounts_engaged":4,"total_interactions":5,"saves":1},
+{"account_id":"17841402153334146","date":"2026-04-11","reach":2457,"accounts_engaged":128,"total_interactions":218,"saves":21},{"account_id":"17841453260783171","date":"2026-04-11","reach":40,"accounts_engaged":2,"total_interactions":4,"saves":1},
+{"account_id":"17841402153334146","date":"2026-04-12","reach":2855,"accounts_engaged":149,"total_interactions":255,"saves":44},{"account_id":"17841453260783171","date":"2026-04-12","reach":88,"accounts_engaged":17,"total_interactions":25,"saves":3},
+{"account_id":"17841402153334146","date":"2026-04-13","reach":2110,"accounts_engaged":146,"total_interactions":280,"saves":43},{"account_id":"17841453260783171","date":"2026-04-13","reach":463,"accounts_engaged":12,"total_interactions":15,"saves":3},
+{"account_id":"17841402153334146","date":"2026-04-14","reach":12072,"accounts_engaged":568,"total_interactions":798,"saves":109},{"account_id":"17841453260783171","date":"2026-04-14","reach":162,"accounts_engaged":5,"total_interactions":11,"saves":0},
+{"account_id":"17841402153334146","date":"2026-04-15","reach":5503,"accounts_engaged":281,"total_interactions":406,"saves":45},{"account_id":"17841453260783171","date":"2026-04-15","reach":627,"accounts_engaged":5,"total_interactions":6,"saves":0},
+{"account_id":"17841402153334146","date":"2026-04-16","reach":3757,"accounts_engaged":190,"total_interactions":251,"saves":35},{"account_id":"17841453260783171","date":"2026-04-16","reach":685,"accounts_engaged":26,"total_interactions":42,"saves":4},
+{"account_id":"17841402153334146","date":"2026-04-17","reach":1815,"accounts_engaged":91,"total_interactions":117,"saves":16},{"account_id":"17841453260783171","date":"2026-04-17","reach":746,"accounts_engaged":26,"total_interactions":43,"saves":5},
+{"account_id":"17841402153334146","date":"2026-04-18","reach":2997,"accounts_engaged":122,"total_interactions":161,"saves":33},{"account_id":"17841453260783171","date":"2026-04-18","reach":492,"accounts_engaged":9,"total_interactions":9,"saves":4},
+{"account_id":"17841402153334146","date":"2026-04-19","reach":2294,"accounts_engaged":123,"total_interactions":162,"saves":37},{"account_id":"17841453260783171","date":"2026-04-19","reach":190,"accounts_engaged":11,"total_interactions":16,"saves":5},
+{"account_id":"17841402153334146","date":"2026-04-20","reach":2723,"accounts_engaged":110,"total_interactions":149,"saves":15},{"account_id":"17841453260783171","date":"2026-04-20","reach":2101,"accounts_engaged":84,"total_interactions":115,"saves":20},
+{"account_id":"17841402153334146","date":"2026-04-21","reach":8359,"accounts_engaged":433,"total_interactions":715,"saves":97},{"account_id":"17841453260783171","date":"2026-04-21","reach":1768,"accounts_engaged":95,"total_interactions":138,"saves":28},
+{"account_id":"17841402153334146","date":"2026-04-22","reach":16013,"accounts_engaged":1630,"total_interactions":2718,"saves":542},{"account_id":"17841453260783171","date":"2026-04-22","reach":832,"accounts_engaged":29,"total_interactions":40,"saves":6},
+{"account_id":"17841402153334146","date":"2026-04-23","reach":10467,"accounts_engaged":906,"total_interactions":1583,"saves":294},{"account_id":"17841453260783171","date":"2026-04-23","reach":906,"accounts_engaged":16,"total_interactions":19,"saves":3},
+{"account_id":"17841402153334146","date":"2026-04-24","reach":5758,"accounts_engaged":493,"total_interactions":815,"saves":167},{"account_id":"17841453260783171","date":"2026-04-24","reach":1023,"accounts_engaged":18,"total_interactions":23,"saves":7},
+{"account_id":"17841402153334146","date":"2026-04-25","reach":4505,"accounts_engaged":330,"total_interactions":545,"saves":103},{"account_id":"17841453260783171","date":"2026-04-25","reach":210,"accounts_engaged":5,"total_interactions":6,"saves":0},
+{"account_id":"17841402153334146","date":"2026-04-26","reach":3642,"accounts_engaged":241,"total_interactions":416,"saves":76},{"account_id":"17841453260783171","date":"2026-04-26","reach":470,"accounts_engaged":12,"total_interactions":16,"saves":2},
+{"account_id":"17841402153334146","date":"2026-04-27","reach":3063,"accounts_engaged":206,"total_interactions":305,"saves":80},{"account_id":"17841453260783171","date":"2026-04-27","reach":1279,"accounts_engaged":29,"total_interactions":44,"saves":21},
+{"account_id":"17841402153334146","date":"2026-04-28","reach":7094,"accounts_engaged":434,"total_interactions":651,"saves":131},{"account_id":"17841453260783171","date":"2026-04-28","reach":2376,"accounts_engaged":141,"total_interactions":200,"saves":43},
+{"account_id":"17841402153334146","date":"2026-04-29","reach":11649,"accounts_engaged":535,"total_interactions":834,"saves":189},{"account_id":"17841453260783171","date":"2026-04-29","reach":811,"accounts_engaged":493,"total_interactions":802,"saves":72},
+{"account_id":"17841402153334146","date":"2026-04-30","reach":3996,"accounts_engaged":221,"total_interactions":314,"saves":85},{"account_id":"17841453260783171","date":"2026-04-30","reach":709,"accounts_engaged":132,"total_interactions":234,"saves":34},
+{"account_id":"17841402153334146","date":"2026-05-01","reach":3159,"accounts_engaged":206,"total_interactions":325,"saves":78},{"account_id":"17841453260783171","date":"2026-05-01","reach":565,"accounts_engaged":54,"total_interactions":104,"saves":4},
+{"account_id":"17841402153334146","date":"2026-05-02","reach":412,"accounts_engaged":17,"total_interactions":22,"saves":7},{"account_id":"17841453260783171","date":"2026-05-02","reach":56,"accounts_engaged":2,"total_interactions":3,"saves":1}
+];
+
+const EMBEDDED_FOLLOWERS_30D = [
+{"account_id":"17841453260783171","date":"2026-04-02","follower_count_1d":9},{"account_id":"17841402153334146","date":"2026-04-02","follower_count_1d":15},
+{"account_id":"17841453260783171","date":"2026-04-03","follower_count_1d":6},{"account_id":"17841402153334146","date":"2026-04-03","follower_count_1d":17},
+{"account_id":"17841453260783171","date":"2026-04-04","follower_count_1d":4},{"account_id":"17841402153334146","date":"2026-04-04","follower_count_1d":22},
+{"account_id":"17841453260783171","date":"2026-04-05","follower_count_1d":4},{"account_id":"17841402153334146","date":"2026-04-05","follower_count_1d":16},
+{"account_id":"17841453260783171","date":"2026-04-06","follower_count_1d":3},{"account_id":"17841402153334146","date":"2026-04-06","follower_count_1d":18},
+{"account_id":"17841453260783171","date":"2026-04-07","follower_count_1d":1},{"account_id":"17841402153334146","date":"2026-04-07","follower_count_1d":24},
+{"account_id":"17841453260783171","date":"2026-04-08","follower_count_1d":6},{"account_id":"17841402153334146","date":"2026-04-08","follower_count_1d":13},
+{"account_id":"17841453260783171","date":"2026-04-09","follower_count_1d":10},{"account_id":"17841402153334146","date":"2026-04-09","follower_count_1d":25},
+{"account_id":"17841453260783171","date":"2026-04-10","follower_count_1d":7},{"account_id":"17841402153334146","date":"2026-04-10","follower_count_1d":18},
+{"account_id":"17841453260783171","date":"2026-04-11","follower_count_1d":1},{"account_id":"17841402153334146","date":"2026-04-11","follower_count_1d":14},
+{"account_id":"17841453260783171","date":"2026-04-12","follower_count_1d":9},{"account_id":"17841402153334146","date":"2026-04-12","follower_count_1d":17},
+{"account_id":"17841453260783171","date":"2026-04-13","follower_count_1d":12},{"account_id":"17841402153334146","date":"2026-04-13","follower_count_1d":14},
+{"account_id":"17841453260783171","date":"2026-04-14","follower_count_1d":5},{"account_id":"17841402153334146","date":"2026-04-14","follower_count_1d":27},
+{"account_id":"17841453260783171","date":"2026-04-15","follower_count_1d":9},{"account_id":"17841402153334146","date":"2026-04-15","follower_count_1d":22},
+{"account_id":"17841453260783171","date":"2026-04-16","follower_count_1d":7},{"account_id":"17841402153334146","date":"2026-04-16","follower_count_1d":14},
+{"account_id":"17841453260783171","date":"2026-04-17","follower_count_1d":15},{"account_id":"17841402153334146","date":"2026-04-17","follower_count_1d":8},
+{"account_id":"17841453260783171","date":"2026-04-18","follower_count_1d":7},{"account_id":"17841402153334146","date":"2026-04-18","follower_count_1d":17},
+{"account_id":"17841453260783171","date":"2026-04-19","follower_count_1d":5},{"account_id":"17841402153334146","date":"2026-04-19","follower_count_1d":16},
+{"account_id":"17841453260783171","date":"2026-04-20","follower_count_1d":136},{"account_id":"17841402153334146","date":"2026-04-20","follower_count_1d":24},
+{"account_id":"17841453260783171","date":"2026-04-21","follower_count_1d":40},{"account_id":"17841402153334146","date":"2026-04-21","follower_count_1d":18},
+{"account_id":"17841453260783171","date":"2026-04-22","follower_count_1d":15},{"account_id":"17841402153334146","date":"2026-04-22","follower_count_1d":57},
+{"account_id":"17841453260783171","date":"2026-04-23","follower_count_1d":15},{"account_id":"17841402153334146","date":"2026-04-23","follower_count_1d":84},
+{"account_id":"17841453260783171","date":"2026-04-24","follower_count_1d":21},{"account_id":"17841402153334146","date":"2026-04-24","follower_count_1d":47},
+{"account_id":"17841453260783171","date":"2026-04-25","follower_count_1d":8},{"account_id":"17841402153334146","date":"2026-04-25","follower_count_1d":28},
+{"account_id":"17841453260783171","date":"2026-04-26","follower_count_1d":12},{"account_id":"17841402153334146","date":"2026-04-26","follower_count_1d":27},
+{"account_id":"17841453260783171","date":"2026-04-27","follower_count_1d":119},{"account_id":"17841402153334146","date":"2026-04-27","follower_count_1d":36},
+{"account_id":"17841453260783171","date":"2026-04-28","follower_count_1d":156},{"account_id":"17841402153334146","date":"2026-04-28","follower_count_1d":37},
+{"account_id":"17841453260783171","date":"2026-04-29","follower_count_1d":55},{"account_id":"17841402153334146","date":"2026-04-29","follower_count_1d":31},
+{"account_id":"17841453260783171","date":"2026-04-30","follower_count_1d":34},{"account_id":"17841402153334146","date":"2026-04-30","follower_count_1d":28},
+{"account_id":"17841453260783171","date":"2026-05-01","follower_count_1d":0},{"account_id":"17841402153334146","date":"2026-05-01","follower_count_1d":0}
+];
+
+// Merge follower deltas into daily array
+(function mergeFollowerDeltas() {
+  const key = (a, d) => a + '|' + d;
+  const map = {};
+  EMBEDDED_FOLLOWERS_30D.forEach(r => map[key(r.account_id, r.date)] = r.follower_count_1d);
+  EMBEDDED_DAILY.forEach(r => { r.follower_count_1d = map[key(r.account_id, r.date)] || 0; });
+})();
+
+/* ============================================================================
+   COMMAND CENTER LOGIC (operates on embedded data)
+   ============================================================================ */
+const ACCOUNTS = {
+  '17841402153334146': { handle: 'esenmagazine', label: 'ĒSEN Magazine', color: '#b89968' },
+  '17841453260783171': { handle: 'esenmedical',  label: 'ĒSEN Medical',  color: '#7a8a6a' }
+};
+
+const TOPICS = [
+  { id: 'sleep',     label: '睡眠 Sleep',                kw: ['睡眠','失眠','sleep','大谷','深層睡眠','rem','作息','褪黑激素','夜貓'] },
+  { id: 'stress',    label: '減壓 Stress / Burnout',     kw: ['減壓','壓力','stress','焦慮','專注','box breathing','冥想','burnout','疲憊','fatigue','過勞','決策疲勞'] },
+  { id: 'allergy',   label: '過敏發炎 Allergy',          kw: ['過敏','allergy','發炎','inflammation','濕疹','過敏原','ige','igg','慢性發炎'] },
+  { id: 'iv',        label: '營養點滴 IV / Boost',        kw: ['點滴','iv drip','boost','營養點滴','輸液','drip bar'] },
+  { id: 'redlight',  label: '紅光療法 Red Light',         kw: ['紅光','red light','光療','光生物','rlt','近紅外','藍光'] },
+  { id: 'inner',     label: '內耗情緒 Inner Self',        kw: ['內耗','韌性','安全依附','attachment','孤獨','情緒','心理','心碎'] },
+  { id: 'aging',     label: '抗老化 Anti-Aging',          kw: ['老化','抗老','aging','粒線體','mitochondria','膠原','collagen','延緩','纖維母'] },
+  { id: 'hormone',   label: '荷爾蒙 Hormone',             kw: ['雌激素','荷爾蒙','hormone','hpa','腺瘤','囊腫','黃體素','排卵','賀爾蒙','更年期'] },
+  { id: 'gene',      label: '基因檢測 Genetics',          kw: ['基因','gene','dna','基因檢測','基因策略','精準醫療'] },
+  { id: 'gut',       label: '腸胃飲食 Gut / Diet',        kw: ['腸胃','脹氣','茄科','草酸','凝集素','飲食','排毒','瘦瘦針','glp','體態','宵夜'] },
+  { id: 'wellness',  label: '生活醫學 Lifestyle Medicine', kw: ['生活醫學','lifestyle medicine','wellness','預防醫學','salon','保養','dr. wilson','dr.wilson'] },
+  { id: 'walking',   label: '行走/朝聖 Walking',           kw: ['遶境','行走','步行','walk','媽祖','足底'] },
+  { id: 'cancer',    label: '癌症預防 Cancer',             kw: ['癌症','肺癌','cancer','腫瘤','防癌','囊腫'] },
+  { id: 'love',      label: '神經情感 Love & Brain',       kw: ['愛情','多巴胺','dopamine','神經傳導','戀愛','暈船'] },
+  { id: 'skin',      label: '皮膚膚質 Skin',               kw: ['皮膚','膚質','痤瘡','膠原','糖化','蠟黃'] }
+];
+
+const FORMAT_TABS = [
+  { id: 'all',      label: 'All',      types: null },
+  { id: 'carousel', label: 'Carousel', types: ['CAROUSEL_ALBUM'] },
+  { id: 'reel',     label: 'Reel',     types: ['REELS'] },
+  { id: 'single',   label: 'Single',   types: ['IMAGE','VIDEO'] }
+];
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_LABELS_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+let activeTab = 'all';
+let activeAccount = 'all';
+let lastData = null;
+
+const fmt = n => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  n = Math.max(0, Math.round(n));
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 10000)   return (n/1000).toFixed(1) + 'K';
+  if (n >= 1000)    return n.toLocaleString();
+  return n.toString();
+};
+const isoDate = d => d.toISOString().slice(0, 10);
+const escapeHtml = s => (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+
+function setDefaultDates() {
+  document.getElementById('date-to').value = SNAPSHOT_TO;
+  document.getElementById('date-from').value = SNAPSHOT_FROM;
+}
+
+function getDateRange() {
+  let from = document.getElementById('date-from').value || SNAPSHOT_FROM;
+  let to = document.getElementById('date-to').value || SNAPSHOT_TO;
+  if (from < SNAPSHOT_FROM) from = SNAPSHOT_FROM;
+  if (to > SNAPSHOT_TO) to = SNAPSHOT_TO;
+  return { from, to };
+}
+
+function applyDateRange() {
+  const err = document.getElementById('err');
+  err.classList.remove('active');
+  const { from, to } = getDateRange();
+  if (from > to) {
+    err.textContent = 'From date must be on or before To date.';
+    err.classList.add('active');
+    return;
+  }
+  const filteredMedia = EMBEDDED_MEDIA.filter(p => {
+    const ts = (p.timestamp || '').slice(0, 10);
+    return ts >= from && ts <= to;
+  });
+  const filteredDaily = EMBEDDED_DAILY.filter(d => d.date >= from && d.date <= to);
+  lastData = {
+    media: enrichMedia(filteredMedia),
+    daily: filteredDaily,
+    current: EMBEDDED_CURRENT,
+    from, to
+  };
+  render();
+  document.getElementById('snap-when').textContent = new Date(SNAPSHOT_AT).toLocaleString();
+  document.getElementById('ts').textContent = 'Snapshot ' + new Date(SNAPSHOT_AT).toLocaleDateString();
+}
+
+function enrichMedia(media) {
+  return media.map(p => {
+    const cap = (p.media_caption || '').toLowerCase();
+    const topics = [];
+    TOPICS.forEach(t => {
+      let hits = 0;
+      t.kw.forEach(k => { if (cap.includes(k.toLowerCase())) hits += 1; });
+      if (hits > 0) topics.push({ id: t.id, label: t.label, hits });
+    });
+    topics.sort((a,b) => b.hits - a.hits);
+    const primary = topics[0] || { id: 'other', label: 'Other', hits: 0 };
+    const ts = p.timestamp ? new Date(p.timestamp) : null;
+    const dow = ts ? ts.getDay() : null;
+    const score = (+p.media_reach || 0) * 0.5 +
+                  (+p.media_engagement || 0) * 1.0 +
+                  (+p.media_saved || 0) * 4.0 +
+                  (+p.media_shares || 0) * 3.0;
+    return { ...p, _topics: topics, _topic: primary, _ts: ts, _dow: dow, _score: score };
+  });
+}
+
+function filterByAccount(arr) {
+  if (activeAccount === 'all') return arr;
+  return arr.filter(r => r.account_id === activeAccount);
+}
+function filterByTab(media) {
+  const tab = FORMAT_TABS.find(t => t.id === activeTab);
+  if (!tab || !tab.types) return media;
+  return media.filter(p => tab.types.includes(p.media_type) || tab.types.includes(p.media_product_type));
+}
+function avg(arr, sel) {
+  if (!arr.length) return 0;
+  return arr.reduce((s, x) => s + (sel ? sel(x) : x), 0) / arr.length;
+}
+function captionSnippet(p, n) {
+  const c = (p.media_caption || '').replace(/\s+/g, ' ').trim();
+  const firstLine = (p.media_caption || '').split('\n').find(l => l.trim().length > 4);
+  const base = firstLine ? firstLine.trim() : c;
+  return base.length > n ? base.slice(0, n) + '…' : base;
+}
+
+function render() {
+  if (!lastData) return;
+  renderOverview();
+  renderTabs();
+  renderTabBody();
+  renderRecentPosts();
+  renderContentBank();
+  renderWeekly();
+  renderFilm();
+  renderChanged();
+}
+
+function renderOverview() {
+  const { media, daily, current, from, to } = lastData;
+  const mediaF = filterByAccount(media);
+  const dailyF = filterByAccount(daily);
+  const currentF = filterByAccount(current);
+
+  const accLabel = activeAccount === 'all' ? 'All accounts (combined)' : (ACCOUNTS[activeAccount]?.label || activeAccount);
+  document.getElementById('window-label').textContent =
+    `Window: ${from} → ${to}  ·  ${accLabel}  ·  ${mediaF.length} posts published  ·  ${new Set(dailyF.map(d=>d.date)).size} days`;
+
+  const totalFollowers = currentF.reduce((s,r) => s + (+r.followers_count || 0), 0);
+  const totalReach = dailyF.reduce((s,r) => s + Math.max(0, +r.reach || 0), 0);
+  const totalEng = dailyF.reduce((s,r) => s + Math.max(0, +r.total_interactions || 0), 0);
+  const newFollowers = dailyF.reduce((s,r) => s + Math.max(0, +r.follower_count_1d || 0), 0);
+  const avgReachPerPost = mediaF.length ? Math.round(mediaF.reduce((s,p) => s + (+p.media_reach || 0), 0) / mediaF.length) : 0;
+
+  const tiles = [
+    { label: 'Followers', value: fmt(totalFollowers), sub: `+${fmt(newFollowers)} in window (last 30d)` },
+    { label: 'Reach',     value: fmt(totalReach),     sub: 'cumulative' },
+    { label: 'Engagement',value: fmt(totalEng),       sub: 'interactions' },
+    { label: 'Posts',     value: mediaF.length,       sub: 'published in window' },
+    { label: 'Avg Reach / Post', value: fmt(avgReachPerPost), sub: 'media-level' }
+  ];
+  document.getElementById('overview').innerHTML = tiles.map(t =>
+    `<div class="overview-tile"><div class="ot-label">${t.label}</div>` +
+    `<div class="ot-value">${t.value}</div>` +
+    `<div class="ot-sub">${t.sub}</div></div>`
+  ).join('');
+}
+
+function renderTabs() {
+  const mediaF = filterByAccount(lastData.media);
+  const counts = {};
+  FORMAT_TABS.forEach(t => {
+    counts[t.id] = !t.types ? mediaF.length :
+      mediaF.filter(p => t.types.includes(p.media_type) || t.types.includes(p.media_product_type)).length;
+  });
+  const bar = document.getElementById('format-tabs');
+  bar.innerHTML = FORMAT_TABS.map(t =>
+    `<div class="tab ${t.id === activeTab ? 'active' : ''}" data-tab="${t.id}">${t.label}<span class="tab-count">${counts[t.id]}</span></div>`
+  ).join('');
+  bar.querySelectorAll('.tab').forEach(el => {
+    el.addEventListener('click', () => {
+      activeTab = el.dataset.tab;
+      renderTabs();
+      renderTabBody();
+    });
+  });
+}
+
+function renderTabBody() {
+  const mediaF = filterByAccount(lastData.media);
+  const subset = filterByTab(mediaF);
+  const top = [...subset].sort((a,b) => b._score - a._score).slice(0, 5);
+  document.getElementById('top-posts').innerHTML = top.length
+    ? top.map(topPostCard).join('')
+    : '<div class="empty">No posts in this format/account combo for the selected window.</div>';
+  const win = computeWorking(subset);
+  document.getElementById('whats-working').innerHTML = win.length
+    ? win.map(i => insightCard(i, 'win')).join('')
+    : '<div class="empty">Need more data to extract patterns.</div>';
+  const lose = computeNotWorking(subset);
+  document.getElementById('whats-not').innerHTML = lose.length
+    ? lose.map(i => insightCard(i, 'lose')).join('')
+    : '<div class="empty">Nothing materially underperforming. Nice.</div>';
+}
+
+function topPostCard(p) {
+  const acc = ACCOUNTS[p.account_id] || { label: p.account_name };
+  const date = p._ts ? p._ts.toLocaleDateString(undefined, { month:'short', day:'numeric' }) : '';
+  return `<div class="top-post">
+    <div class="tp-row1">
+      <span class="tp-account">${escapeHtml(acc.label)} · ${escapeHtml(p._topic.label)}</span>
+      <span class="tp-date">${date}</span>
+    </div>
+    <div class="tp-title">${escapeHtml(captionSnippet(p, 90))}</div>
+    <div class="tp-stats">
+      <div class="tp-stat"><span class="k">Reach</span><span class="v">${fmt(p.media_reach)}</span></div>
+      <div class="tp-stat"><span class="k">Eng</span><span class="v">${fmt(p.media_engagement)}</span></div>
+      <div class="tp-stat"><span class="k">Saves</span><span class="v">${fmt(p.media_saved)}</span></div>
+      <div class="tp-stat"><span class="k">Shares</span><span class="v">${fmt(p.media_shares)}</span></div>
+    </div>
+    ${p.media_permalink ? `<a class="tp-link" href="${escapeHtml(p.media_permalink)}" target="_blank" rel="noopener">View on Instagram →</a>` : ''}
+  </div>`;
+}
+
+function insightCard(i, kind) {
+  return `<div class="insight ${kind}">
+    <div class="ins-title">${escapeHtml(i.title)}</div>
+    <div class="ins-body">${escapeHtml(i.body)}</div>
+    ${i.data ? `<div class="ins-data">${escapeHtml(i.data)}</div>` : ''}
+  </div>`;
+}
+
+function computeWorking(subset) {
+  const insights = [];
+  if (!subset.length) return insights;
+  const byTopic = {};
+  subset.forEach(p => {
+    const id = p._topic.id;
+    if (!byTopic[id]) byTopic[id] = { label: p._topic.label, posts: [] };
+    byTopic[id].posts.push(p);
+  });
+  const topics = Object.values(byTopic).filter(t => t.posts.length >= 1)
+    .map(t => ({ ...t, avgReach: avg(t.posts, p => +p.media_reach || 0), avgSaves: avg(t.posts, p => +p.media_saved || 0) }))
+    .sort((a,b) => b.avgReach - a.avgReach);
+  if (topics.length) {
+    const t = topics[0];
+    insights.push({
+      title: `${t.label} earning the most reach`,
+      body: `Posts on this topic average ${fmt(t.avgReach)} reach across ${t.posts.length} post${t.posts.length>1?'s':''}.`,
+      data: `Top: "${captionSnippet(t.posts.sort((a,b)=>(+b.media_reach||0)-(+a.media_reach||0))[0], 60)}"`
+    });
+  }
+  const bySaves = topics.slice().sort((a,b) => b.avgSaves - a.avgSaves);
+  if (bySaves.length && bySaves[0].avgSaves > 50) {
+    const t = bySaves[0];
+    insights.push({
+      title: `${t.label} drives saves`,
+      body: `Avg ${fmt(t.avgSaves)} saves/post — strong save-to-act intent worth doubling down on.`,
+      data: `Across ${t.posts.length} post${t.posts.length>1?'s':''} in window.`
+    });
+  }
+  const byDow = [0,1,2,3,4,5,6].map(d => {
+    const posts = subset.filter(p => p._dow === d);
+    return { d, posts, avgReach: avg(posts, p => +p.media_reach || 0) };
+  }).filter(x => x.posts.length >= 2).sort((a,b) => b.avgReach - a.avgReach);
+  if (byDow.length) {
+    const w = byDow[0];
+    insights.push({
+      title: `${DAY_LABELS_FULL[w.d]} is the strongest posting day`,
+      body: `Avg ${fmt(w.avgReach)} reach across ${w.posts.length} posts on ${DAY_NAMES[w.d]}.`,
+      data: `Compared to your overall avg of ${fmt(avg(subset, p => +p.media_reach || 0))}.`
+    });
+  }
+  if (activeTab === 'all' && activeAccount === 'all') {
+    const accStats = Object.keys(ACCOUNTS).map(aid => {
+      const posts = subset.filter(p => p.account_id === aid);
+      return { aid, posts, avgReach: avg(posts, p => +p.media_reach || 0) };
+    }).filter(x => x.posts.length).sort((a,b) => b.avgReach - a.avgReach);
+    if (accStats.length >= 2 && accStats[0].avgReach > accStats[1].avgReach * 1.5) {
+      const w = accStats[0];
+      insights.push({
+        title: `${ACCOUNTS[w.aid].label} pulling more reach`,
+        body: `Avg ${fmt(w.avgReach)} reach/post vs ${fmt(accStats[1].avgReach)} on the other handle.`,
+        data: `${w.posts.length} posts in window.`
+      });
+    }
+  }
+  return insights.slice(0, 4);
+}
+
+function computeNotWorking(subset) {
+  const insights = [];
+  if (!subset.length) return insights;
+  const overallAvg = avg(subset, p => +p.media_reach || 0);
+  const byTopic = {};
+  subset.forEach(p => {
+    const id = p._topic.id;
+    if (!byTopic[id]) byTopic[id] = { label: p._topic.label, posts: [] };
+    byTopic[id].posts.push(p);
+  });
+  const topics = Object.values(byTopic).filter(t => t.posts.length >= 2)
+    .map(t => ({ ...t, avgReach: avg(t.posts, p => +p.media_reach || 0) }));
+  const weak = topics.filter(t => t.avgReach < overallAvg * 0.6).sort((a,b) => a.avgReach - b.avgReach);
+  if (weak.length) {
+    const t = weak[0];
+    insights.push({
+      title: `${t.label} underperforming`,
+      body: `${t.posts.length} posts averaging ${fmt(t.avgReach)} reach — ${Math.round((1-t.avgReach/overallAvg)*100)}% below window average.`,
+      data: `Consider repackaging the angle or moving to a different format.`
+    });
+  }
+  const lowSave = subset.filter(p => (+p.media_reach || 0) > overallAvg && (+p.media_saved || 0) < 30)
+    .sort((a,b) => (+a.media_saved||0) - (+b.media_saved||0));
+  if (lowSave.length) {
+    const p = lowSave[0];
+    insights.push({
+      title: 'Reach without action',
+      body: `"${captionSnippet(p, 60)}" — ${fmt(p.media_reach)} reach but only ${fmt(p.media_saved)} saves. Hook is finding eyeballs; the offer/CTA isn't earning the save.`,
+      data: 'Audit the carousel\'s closing slide and the comment-prompt CTA.'
+    });
+  }
+  const byDow = [0,1,2,3,4,5,6].map(d => {
+    const posts = subset.filter(p => p._dow === d);
+    return { d, posts, avgReach: avg(posts, p => +p.media_reach || 0) };
+  }).filter(x => x.posts.length >= 2).sort((a,b) => a.avgReach - b.avgReach);
+  if (byDow.length && byDow[0].avgReach < overallAvg * 0.7) {
+    const w = byDow[0];
+    insights.push({
+      title: `${DAY_LABELS_FULL[w.d]} posts underperforming`,
+      body: `Avg ${fmt(w.avgReach)} reach across ${w.posts.length} posts — well below the window average.`,
+      data: `Try shifting these slots to a stronger day, or save lower-priority pieces for ${DAY_NAMES[w.d]}.`
+    });
+  }
+  return insights.slice(0, 4);
+}
+
+function renderContentBank() {
+  const all = lastData.media;
+  if (!all.length) {
+    document.getElementById('content-bank').innerHTML = '<div class="empty">No posts in window — widen the date range to generate ideas.</div>';
+    return;
+  }
+  const byTopic = {};
+  all.forEach(p => {
+    const id = p._topic.id;
+    if (!byTopic[id]) byTopic[id] = { id, label: p._topic.label, posts: [] };
+    byTopic[id].posts.push(p);
+  });
+  const topicStats = Object.values(byTopic).map(t => ({
+    ...t,
+    avgReach: avg(t.posts, p => +p.media_reach || 0),
+    avgSaves: avg(t.posts, p => +p.media_saved || 0),
+    bestPost: t.posts.slice().sort((a,b) => b._score - a._score)[0]
+  })).filter(t => t.id !== 'other')
+    .sort((a,b) => (b.avgSaves * 0.6 + b.avgReach * 0.4 / 1000) - (a.avgSaves * 0.6 + a.avgReach * 0.4 / 1000));
+
+  const bestDayFor = (posts) => {
+    const tally = {};
+    posts.forEach(p => {
+      if (p._dow == null) return;
+      tally[p._dow] = tally[p._dow] || { reach: 0, n: 0 };
+      tally[p._dow].reach += (+p.media_reach || 0);
+      tally[p._dow].n += 1;
+    });
+    let best = null;
+    Object.entries(tally).forEach(([d, v]) => {
+      const avgR = v.reach / v.n;
+      if (!best || avgR > best.avgR) best = { dow: +d, avgR };
+    });
+    return best;
+  };
+
+  const ideaPool = [];
+  topicStats.slice(0, 8).forEach(t => {
+    const bestDay = bestDayFor(t.posts);
+    const dayLabel = bestDay ? DAY_LABELS_FULL[bestDay.dow] : 'Tuesday';
+    const ex = t.bestPost ? captionSnippet(t.bestPost, 50) : t.label;
+    ideaPool.push({
+      topic: t.label, hook: pickIdeaHook(t.id), format: 'Carousel', day: dayLabel,
+      why: `Your ${t.label} posts average ${fmt(t.avgReach)} reach and ${fmt(t.avgSaves)} saves. Best example: "${ex}".`
+    });
+    if (ideaPool.length <= 4) {
+      ideaPool.push({
+        topic: t.label, hook: pickReelHook(t.id), format: 'Reel', day: dayLabel,
+        why: `Carousel performs on this topic — a 30-45s Reel cut from the same script can double reach via sound-on discovery.`
+      });
+    }
+  });
+
+  const fallbacks = [
+    { topic: '生活醫學 Lifestyle Medicine', hook: 'A day in the life at ĒSEN — 7 small habits, one philosophy', format: 'Carousel', day: 'Sunday', why: 'Founder/clinic POV builds trust; Sundays index well for reflective brand content.' },
+    { topic: '客戶見證 Patient Story', hook: '"I thought it was just stress" — a member\'s 90-day story', format: 'Reel', day: 'Wednesday', why: 'Testimonials convert better in motion. Wednesday is mid-week consideration window.' }
+  ];
+  while (ideaPool.length < 10) ideaPool.push(fallbacks[ideaPool.length % fallbacks.length]);
+
+  const ideas = ideaPool.slice(0, 10);
+  document.getElementById('content-bank').innerHTML = ideas.map((i, idx) => `
+    <div class="idea-card">
+      <div class="idea-num">${String(idx+1).padStart(2,'0')}</div>
+      <div class="idea-topic">${escapeHtml(i.topic)}</div>
+      <div class="idea-hook">${escapeHtml(i.hook)}</div>
+      <span class="idea-format">${escapeHtml(i.format)}</span>
+      <span class="idea-day">${escapeHtml(i.day)}</span>
+      <div class="idea-why">${escapeHtml(i.why)}</div>
+    </div>
+  `).join('');
+}
+
+function pickIdeaHook(topicId) {
+  const HOOKS = {
+    sleep:'"我以為熬夜沒事" — 凌晨 3 點，你的大腦正在做什麼？',
+    stress:'Burnout 不是疲倦的升級版，是身體在發信號',
+    allergy:'你以為的養生食物，正在讓你發炎？',
+    iv:'為什麼坊間的「點滴吧」可能傷害你的健康',
+    redlight:'紅光療法 vs 雷射 — 細胞層級的差異',
+    inner:'內耗的人都有這 5 個共通點',
+    aging:'40 歲才開始抗老？你已經晚了 10 年',
+    hormone:'經痛不是常態 — 雌激素失衡的 7 個訊號',
+    gene:'基因檢測能告訴你的 3 件事，與不能告訴你的 2 件事',
+    gut:'吃素也會慢性發炎？飲食敏感原來不分葷素',
+    wellness:'Wellness 不是商品 — Dr. Wilson 的 90 天觀察',
+    walking:'步行也是一種冥想 — 5 分鐘練習',
+    cancer:'癌症前的 5 個身體訊號，別忽略',
+    love:'愛情其實是化學反應 — 多巴胺的真相',
+    skin:'皮膚暗沉 ≠ 缺乏保養，可能是胰島素問題'
+  };
+  return HOOKS[topicId] || 'Reframe the original angle with new data';
+}
+function pickReelHook(topicId) {
+  const REELS = {
+    sleep:'60 seconds: How your brain cleans itself at night',
+    stress:'Box Breathing — 4 rounds, on camera',
+    allergy:'These "healthy" foods may be inflaming you',
+    iv:'Inside the ĒSEN Boost® room — 30 second tour',
+    redlight:'What 10 minutes of red light actually does',
+    inner:'5 signs of 內耗 you can recognize today',
+    aging:'3 mitochondria habits, in 45 seconds',
+    hormone:'The estrogen window doctors don\'t talk about',
+    gene:'What your DNA can\'t tell you',
+    gut:'Why kale broke me out — a one-minute story',
+    wellness:'Day in the life: ĒSEN Magazine team',
+    walking:'Walking meditation — try this on your next call',
+    cancer:'3 signs to never ignore',
+    love:'The neuroscience of falling — in 60 seconds',
+    skin:'Why glow needs sleep, not serum'
+  };
+  return REELS[topicId] || 'Cut a 45-second Reel from the carousel script';
+}
+
+function renderWeekly() {
+  const all = lastData.media;
+  const cells = [0,1,2,3,4,5,6].map(d => {
+    const posts = all.filter(p => p._dow === d);
+    return {
+      d, n: posts.length,
+      avgReach: avg(posts, p => +p.media_reach || 0),
+      avgEng:   avg(posts, p => +p.media_engagement || 0),
+      avgSaves: avg(posts, p => +p.media_saved || 0)
+    };
+  });
+  const grid = document.getElementById('dow-grid');
+  let html = '<div class="dow-cell head"></div>';
+  const orderedDows = [1,2,3,4,5,6,0];
+  orderedDows.forEach(d => html += `<div class="dow-cell head">${DAY_NAMES[d]}</div>`);
+  const rows = [
+    { label: 'Posts', sel: 'n', fmt: v => v },
+    { label: 'Avg Reach', sel: 'avgReach', fmt: v => fmt(v) },
+    { label: 'Avg Engagement', sel: 'avgEng', fmt: v => fmt(v) },
+    { label: 'Avg Saves', sel: 'avgSaves', fmt: v => fmt(v) }
+  ];
+  rows.forEach(row => {
+    html += `<div class="dow-cell row-label">${row.label}</div>`;
+    orderedDows.forEach(d => {
+      const c = cells[d];
+      const val = c[row.sel];
+      const isEmpty = (row.sel === 'n' ? c.n === 0 : c.n === 0);
+      const bg = (row.sel !== 'n' && c.n > 0) ? heatColor(val, Math.max(...cells.map(x => x[row.sel]))) : '';
+      html += `<div class="dow-cell" style="${bg ? 'background:'+bg : ''}">` +
+        `<div class="dc-val">${isEmpty ? '—' : row.fmt(val)}</div>` +
+        (row.sel === 'n' && c.n > 0 ? `<div class="dc-meta">posts</div>` : '') +
+      `</div>`;
+    });
+  });
+  grid.innerHTML = html;
+}
+
+function heatColor(v, max) {
+  if (!max || !v) return '';
+  const t = Math.min(1, v / max);
+  const r = Math.round(248 - 60*t);
+  const g = Math.round(243 - 50*t);
+  const b = Math.round(231 - 90*t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function renderFilm() {
+  const today = new Date(SNAPSHOT_AT);
+  document.getElementById('film-window').textContent =
+    `Plan the 7 days from ${today.toLocaleDateString(undefined, { month:'short', day:'numeric' })} → ` +
+    `${new Date(today.getTime() + 6*86400000).toLocaleDateString(undefined, { month:'short', day:'numeric' })}. Fill in each day yourself — saved automatically on this device.`;
+
+  // Build week key based on the snapshot Monday (so storage is stable)
+  const weekKey = 'esen_film_week_' + isoDate(today);
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(weekKey) || '{}'); } catch (e) { saved = {}; }
+
+  const cards = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today.getTime() + i * 86400000);
+    cards.push({ dow: d.getDay(), date: d, idx: i });
+  }
+
+  document.getElementById('film-grid').innerHTML = cards.map(c => {
+    const dKey = 'd' + c.idx;
+    const cur = saved[dKey] || {};
+    const filmedClass = cur.filmed ? ' filmed' : '';
+    return `<div class="film-card-blank${filmedClass}" data-day-idx="${c.idx}">
+      <div class="fcb-day">${DAY_NAMES[c.dow]}</div>
+      <div class="fcb-date">${c.date.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+      <label>What to film</label>
+      <input type="text" data-field="topic" value="${escapeHtml(cur.topic || '')}" placeholder="Topic / idea">
+      <label>Concept / Hook</label>
+      <textarea data-field="hook" placeholder="The angle, opening line, or hook">${escapeHtml(cur.hook || '')}</textarea>
+      <label>Location / Setup</label>
+      <input type="text" data-field="location" value="${escapeHtml(cur.location || '')}" placeholder="Where + what's needed">
+      <label>Notes</label>
+      <textarea data-field="notes" placeholder="Anything else">${escapeHtml(cur.notes || '')}</textarea>
+      <label class="fcb-check">
+        <input type="checkbox" data-field="filmed" ${cur.filmed ? 'checked' : ''}> Filmed ✓
+      </label>
+    </div>`;
+  }).join('');
+
+  // Wire up auto-save for film inputs
+  document.querySelectorAll('#film-grid .film-card-blank').forEach(card => {
+    const idx = card.dataset.dayIdx;
+    const dKey = 'd' + idx;
+    card.querySelectorAll('[data-field]').forEach(el => {
+      const handler = () => {
+        let cur = {};
+        try { cur = JSON.parse(localStorage.getItem(weekKey) || '{}'); } catch (e) {}
+        const dayObj = cur[dKey] || {};
+        if (el.type === 'checkbox') {
+          dayObj[el.dataset.field] = el.checked;
+          if (el.checked) card.classList.add('filmed');
+          else card.classList.remove('filmed');
+        } else {
+          dayObj[el.dataset.field] = el.value;
+        }
+        cur[dKey] = dayObj;
+        localStorage.setItem(weekKey, JSON.stringify(cur));
+      };
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    });
+  });
+
+  // Reset button
+  const resetBtn = document.getElementById('film-reset');
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      if (confirm('Clear all entries for this week?')) {
+        localStorage.removeItem(weekKey);
+        renderFilm();
+      }
+    };
+  }
+}
+
+function renderChanged() {
+  const { media, from, to } = lastData;
+  const fromD = new Date(from), toD = new Date(to);
+  const midD = new Date((fromD.getTime() + toD.getTime()) / 2);
+  document.getElementById('changed-window').textContent =
+    `Comparing ${midD.toISOString().slice(0,10)} → ${to} (recent half) vs ${from} → ${midD.toISOString().slice(0,10)} (prior half).`;
+
+  const recent = media.filter(p => p._ts && p._ts >= midD);
+  const prior  = media.filter(p => p._ts && p._ts < midD);
+  const stats = (arr) => {
+    const by = {};
+    arr.forEach(p => {
+      const id = p._topic.id;
+      if (id === 'other') return;
+      if (!by[id]) by[id] = { id, label: p._topic.label, posts: [] };
+      by[id].posts.push(p);
+    });
+    Object.values(by).forEach(t => {
+      t.avgReach = avg(t.posts, p => +p.media_reach || 0);
+    });
+    return by;
+  };
+  const r = stats(recent), p = stats(prior);
+  const allIds = new Set([...Object.keys(r), ...Object.keys(p)]);
+  const changes = [];
+  allIds.forEach(id => {
+    const re = r[id], pr = p[id];
+    if (re && pr) {
+      const pct = pr.avgReach > 0 ? (re.avgReach - pr.avgReach) / pr.avgReach : 0;
+      changes.push({ id, label: re.label, pct, recent: re, prior: pr, type: 'shift' });
+    } else if (re && !pr) {
+      changes.push({ id, label: re.label, pct: 1, recent: re, prior: null, type: 'new' });
+    } else if (pr && !re) {
+      changes.push({ id, label: pr.label, pct: -1, recent: null, prior: pr, type: 'gone' });
+    }
+  });
+  const rising = changes.filter(c => c.pct > 0.15 || c.type === 'new')
+    .sort((a,b) => b.pct - a.pct).slice(0, 6);
+  const falling = changes.filter(c => c.pct < -0.15 || c.type === 'gone')
+    .sort((a,b) => a.pct - b.pct).slice(0, 6);
+
+  const renderItem = c => {
+    const arrow = c.pct >= 0 ? '↗' : '↘';
+    const cls = c.pct >= 0 ? 'up' : 'down';
+    let label;
+    if (c.type === 'new') label = 'NEW THIS HALF';
+    else if (c.type === 'gone') label = 'NOT POSTED RECENTLY';
+    else label = (c.pct >= 0 ? '+' : '') + Math.round(c.pct * 100) + '%';
+    const sample = (c.recent || c.prior).posts
+      .slice().sort((a,b) => (+b.media_reach||0) - (+a.media_reach||0))[0];
+    const recN = c.recent ? c.recent.posts.length : 0;
+    const priN = c.prior ? c.prior.posts.length : 0;
+    return `<div class="change-item">
+      <div class="ci-row1">
+        <span class="ci-topic">${escapeHtml(c.label)}</span>
+        <span class="ci-pct ${cls}">${arrow} ${escapeHtml(label)}</span>
+      </div>
+      <div class="ci-meta">
+        Recent: ${c.recent ? fmt(c.recent.avgReach)+' avg reach · '+recN+' post'+(recN>1?'s':'') : '—'} ·
+        Prior: ${c.prior ? fmt(c.prior.avgReach)+' avg · '+priN+' post'+(priN>1?'s':'') : '—'}
+      </div>
+      ${sample ? `<div class="ci-sample">"${escapeHtml(captionSnippet(sample, 70))}"</div>` : ''}
+    </div>`;
+  };
+  document.getElementById('rising').innerHTML = rising.length
+    ? rising.map(renderItem).join('')
+    : '<div class="empty">No clearly rising topics in this window.</div>';
+  document.getElementById('falling').innerHTML = falling.length
+    ? falling.map(renderItem).join('')
+    : '<div class="empty">No clearly declining topics in this window.</div>';
+}
+
+document.querySelectorAll('#account-bar .account-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('#account-bar .account-pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    activeAccount = p.dataset.account;
+    if (lastData) { renderOverview(); renderTabs(); renderTabBody(); renderRecentPosts(); }
+  });
+});
+document.getElementById('apply').addEventListener('click', applyDateRange);
+
+/* ============================================================================
+   RECENT POSTS · per-post What's Working / Not / Improvements
+   ============================================================================ */
+function renderRecentPosts() {
+  const mediaF = filterByAccount(lastData.media);
+  const recent = [...mediaF]
+    .filter(p => p._ts)
+    .sort((a, b) => b._ts - a._ts)
+    .slice(0, 5);
+
+  if (!recent.length) {
+    document.getElementById('recent-posts-list').innerHTML =
+      '<div class="empty">No recent posts in the selected window/account.</div>';
+    return;
+  }
+
+  // Compute baselines for comparison
+  const avgReach   = avg(mediaF, p => +p.media_reach || 0);
+  const avgEng     = avg(mediaF, p => +p.media_engagement || 0);
+  const avgSaves   = avg(mediaF, p => +p.media_saved || 0);
+  const avgShares  = avg(mediaF, p => +p.media_shares || 0);
+  const avgComments= avg(mediaF, p => +p.media_comments_count || 0);
+
+  document.getElementById('recent-posts-list').innerHTML = recent.map((p, idx) => {
+    const acc = ACCOUNTS[p.account_id] || { label: p.account_name };
+    const platform = p.media_product_type === 'REELS' ? 'Reel'
+                   : p.media_type === 'CAROUSEL_ALBUM' ? 'Carousel'
+                   : p.media_type === 'VIDEO' ? 'Video' : 'Post';
+    const date = p._ts ? p._ts.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '';
+    const reach    = +p.media_reach || 0;
+    const eng      = +p.media_engagement || 0;
+    const saves    = +p.media_saved || 0;
+    const shares   = +p.media_shares || 0;
+    const comments = +p.media_comments_count || 0;
+    const likes    = +p.media_like_count || 0;
+    const views    = +p.media_views || 0;
+    const engRate  = reach > 0 ? ((eng / reach) * 100).toFixed(1) + '%' : '—';
+
+    // Build analysis based on this post's metrics vs baselines
+    const working = [];
+    const notWorking = [];
+    const improve = [];
+
+    if (reach > avgReach * 1.2) working.push(`Strong reach — ${fmt(reach)} vs window avg of ${fmt(avgReach)} (${Math.round((reach/avgReach - 1) * 100)}% above).`);
+    if (saves > avgSaves * 1.3) working.push(`High save rate (${fmt(saves)}) — content has bookmark-worthy value.`);
+    if (shares > avgShares * 1.3) working.push(`Strong share count (${fmt(shares)}) — message is resonating enough to spread.`);
+    if (comments > avgComments * 1.3) working.push(`Above-average comments (${fmt(comments)}) — sparking conversation.`);
+    if (engRate !== '—' && (eng / reach) > 0.06) working.push(`Healthy engagement rate (${engRate}) on the audience reached.`);
+    if (working.length === 0) working.push('Solid baseline performance — nothing dramatically standing out as a strength.');
+
+    if (reach < avgReach * 0.7) notWorking.push(`Reach below average — ${fmt(reach)} vs window avg of ${fmt(avgReach)} (${Math.round((1 - reach/avgReach) * 100)}% below).`);
+    if (saves < avgSaves * 0.6 && reach > avgReach * 0.5) notWorking.push(`Low save rate (${fmt(saves)}) relative to reach — value isn't landing as bookmarkable.`);
+    if (comments < avgComments * 0.5) notWorking.push(`Few comments (${fmt(comments)}) — weak conversation hook or unclear CTA.`);
+    if (shares < avgShares * 0.5 && saves > 0) notWorking.push(`Low share count (${fmt(shares)}) — content is being saved but not passed along.`);
+    if (engRate !== '—' && (eng / reach) < 0.03) notWorking.push(`Low engagement rate (${engRate}) — the audience reached isn't acting.`);
+    if (notWorking.length === 0) notWorking.push('No major weak signals — performance is consistent across metrics.');
+
+    // Improvement suggestions tied to topic + format + weak metric
+    const topicLabel = p._topic.label;
+    if (saves < avgSaves * 0.8) improve.push(`Add a clearer "save this" payoff — checklist, framework, or numbered takeaways on the closing slide/scene.`);
+    if (comments < avgComments * 0.8) improve.push(`End with one specific question (not "thoughts?"). Pin the first comment to seed discussion.`);
+    if (shares < avgShares * 0.8) improve.push(`Sharpen the share trigger — a "tag someone who…" line or a counter-intuitive claim worth sending.`);
+    if (reach < avgReach * 0.8 && platform === 'Carousel') improve.push(`Test a Reel cut on the same ${topicLabel} angle — sound-on discovery typically lifts reach 2-3x.`);
+    if (reach < avgReach * 0.8 && platform !== 'Carousel') improve.push(`Test a stronger first 3 seconds — open with the surprise/payoff, not setup.`);
+    if (improve.length === 0) improve.push(`This post is performing well — repurpose into a Reel cut or a follow-up post on the same ${topicLabel} angle.`);
+    improve.push(`Caption hook is the lever — re-test ${topicLabel} with a sharper opening line if you repackage.`);
+
+    return `<div class="recent-post-card">
+      <div class="rpc-header">
+        <div class="rpc-meta">
+          <span class="rpc-num">${String(idx+1).padStart(2,'0')}</span>
+          <span class="rpc-platform">${platform}</span>
+          <span class="rpc-account">${escapeHtml(acc.label)} · ${escapeHtml(p._topic.label)}</span>
+        </div>
+        <span class="rpc-date">${date}</span>
+      </div>
+      <div class="rpc-caption">${escapeHtml(captionSnippet(p, 180))}</div>
+      <div class="rpc-stats">
+        <div class="rpc-stat"><span class="k">${views ? 'Views' : 'Reach'}</span><span class="v">${fmt(views || reach)}</span></div>
+        <div class="rpc-stat"><span class="k">Likes</span><span class="v">${fmt(likes)}</span></div>
+        <div class="rpc-stat"><span class="k">Comments</span><span class="v">${fmt(comments)}</span></div>
+        <div class="rpc-stat"><span class="k">Shares</span><span class="v">${fmt(shares)}</span></div>
+        <div class="rpc-stat"><span class="k">Saves</span><span class="v">${fmt(saves)}</span></div>
+        <div class="rpc-stat"><span class="k">Eng. Rate</span><span class="v">${engRate}</span></div>
+      </div>
+      <div class="rpc-analysis">
+        <div class="rpc-block working">
+          <div class="rpc-block-title">✓ What's Working</div>
+          <ul>${working.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>
+        </div>
+        <div class="rpc-block notworking">
+          <div class="rpc-block-title">✗ What's Not</div>
+          <ul>${notWorking.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>
+        </div>
+        <div class="rpc-block improve">
+          <div class="rpc-block-title">→ Improvements</div>
+          <ul>${improve.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>
+        </div>
+      </div>
+      ${p.media_permalink ? `<a class="rpc-link" href="${escapeHtml(p.media_permalink)}" target="_blank" rel="noopener">View on Instagram →</a>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================================
+   SIDEBAR PAGE NAVIGATION
+   ============================================================================ */
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + pageId);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+  const navItem = document.querySelector(`.sb-item[data-page="${pageId}"]`);
+  if (navItem) navItem.classList.add('active');
+  // close sidebar on mobile after selection
+  document.getElementById('sidebar').classList.remove('open');
+  // scroll main content to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('.sb-item').forEach(item => {
+  item.addEventListener('click', () => showPage(item.dataset.page));
+});
+document.getElementById('sb-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ============================================================================
+   CONTENT BANK · Recommendations vs My Own Ideas toggle
+   ============================================================================ */
+const MY_IDEAS_KEY = 'esen_my_ideas';
+
+function getMyIdeas() {
+  try { return JSON.parse(localStorage.getItem(MY_IDEAS_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveMyIdeas(arr) {
+  localStorage.setItem(MY_IDEAS_KEY, JSON.stringify(arr));
+}
+function renderMyIdeas() {
+  const list = getMyIdeas();
+  const container = document.getElementById('my-ideas-list');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-ideas">No ideas saved yet — write one above and click "Add Idea".</div>';
+    return;
+  }
+  container.innerHTML = '<div class="my-ideas-grid">' + list.map(idea => `
+    <div class="my-idea-card">
+      <div class="mi-text">${escapeHtml(idea.text)}</div>
+      <div class="mi-meta">
+        <span>${new Date(idea.created).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}</span>
+        <button class="mi-delete" data-id="${idea.id}">Delete</button>
+      </div>
+    </div>
+  `).join('') + '</div>';
+  container.querySelectorAll('.mi-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const updated = getMyIdeas().filter(x => x.id !== id);
+      saveMyIdeas(updated);
+      renderMyIdeas();
+    });
+  });
+}
+
+document.getElementById('my-idea-add').addEventListener('click', () => {
+  const input = document.getElementById('my-idea-input');
+  const txt = input.value.trim();
+  if (!txt) return;
+  const arr = getMyIdeas();
+  arr.unshift({ id: 'idea_' + Date.now(), text: txt, created: new Date().toISOString() });
+  saveMyIdeas(arr);
+  input.value = '';
+  renderMyIdeas();
+});
+
+document.querySelectorAll('.cb-toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cb-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.cb-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('cb-view-' + btn.dataset.view).classList.add('active');
+    if (btn.dataset.view === 'mine') renderMyIdeas();
+  });
+});
+
+/* ============================================================================
+   NOTES · auto-save per section to localStorage
+   ============================================================================ */
+function setupNotesTextareas() {
+  document.querySelectorAll('textarea[data-notes-key]').forEach(ta => {
+    const key = ta.dataset.notesKey;
+    const savedLabel = document.getElementById('notes-saved-' + key.replace('esen_notes_', ''));
+    // Load saved value
+    try {
+      const v = localStorage.getItem(key);
+      if (v !== null) ta.value = v;
+    } catch (e) {}
+    let timeout;
+    ta.addEventListener('input', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        localStorage.setItem(key, ta.value);
+        if (savedLabel) {
+          savedLabel.textContent = 'Saved ✓ ' + new Date().toLocaleTimeString();
+          setTimeout(() => { if (savedLabel) savedLabel.textContent = ''; }, 2500);
+        }
+      }, 500);
+    });
+  });
+}
+setupNotesTextareas();
+renderMyIdeas();
+
+setDefaultDates();
+applyDateRange();
+</script>
+</body>
+</html>
