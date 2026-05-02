@@ -523,7 +523,7 @@ body { padding: 0; }
     <div class="snapshot-banner">
       <div>
         <span class="pill">Snapshot</span>&nbsp;&nbsp;
-        Data captured from Windsor.ai on <b id="snap-when">—</b>. Date filters and tabs work fully — interactivity is preserved.
+        Data captured from Windsor.ai on <b id="snap-when">—</b>. Notes, ideas, and filming plans are <b>shared with your team</b> in real time.
       </div>
       <div style="font-size:10px;color:#8a7f6f">
         For live data, regenerate this dashboard in Cowork.
@@ -728,6 +728,67 @@ body { padding: 0; }
 const SNAPSHOT_AT = "2026-05-02T00:00:00Z";
 const SNAPSHOT_FROM = "2026-02-02";
 const SNAPSHOT_TO = "2026-05-02";
+
+/* ============================================================================
+   SHARED STORE · syncs notes/ideas/film plans across all viewers via npoint.io
+   ============================================================================ */
+const SHARED_BIN_URL = "https://api.npoint.io/821a4cb5dea9e71abed4";
+let sharedStore = {};       // in-memory mirror of the bin contents
+let sharedReady = false;    // true once initial fetch completes
+let savePending = null;     // debounce timer for PUT
+let lastSaveStatus = '';    // for UI indicators
+
+async function loadSharedStore() {
+  try {
+    const res = await fetch(SHARED_BIN_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    sharedStore = (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+  } catch (e) {
+    console.warn('Shared store load failed:', e);
+    sharedStore = {};
+    lastSaveStatus = 'offline';
+  }
+  sharedReady = true;
+}
+
+async function pushSharedStore() {
+  try {
+    const res = await fetch(SHARED_BIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sharedStore)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    lastSaveStatus = 'ok';
+    return true;
+  } catch (e) {
+    console.warn('Shared store save failed:', e);
+    lastSaveStatus = 'fail';
+    return false;
+  }
+}
+
+function scheduleSharedSave() {
+  if (savePending) clearTimeout(savePending);
+  savePending = setTimeout(() => {
+    savePending = null;
+    pushSharedStore();
+  }, 700);
+}
+
+// Get/set helpers that mirror localStorage semantics but use sharedStore
+function sharedGet(key) {
+  return sharedStore[key] === undefined ? null : sharedStore[key];
+}
+function sharedSet(key, value) {
+  sharedStore[key] = value;
+  scheduleSharedSave();
+}
+function sharedRemove(key) {
+  delete sharedStore[key];
+  scheduleSharedSave();
+}
 
 const EMBEDDED_CURRENT = [
   {"account_id":"17841453260783171","account_name":"esenmedical","followers_count":13532,"media_count":125},
@@ -1400,12 +1461,12 @@ function renderFilm() {
   const today = new Date(SNAPSHOT_AT);
   document.getElementById('film-window').textContent =
     `Plan the 7 days from ${today.toLocaleDateString(undefined, { month:'short', day:'numeric' })} → ` +
-    `${new Date(today.getTime() + 6*86400000).toLocaleDateString(undefined, { month:'short', day:'numeric' })}. Fill in each day yourself — saved automatically on this device.`;
+    `${new Date(today.getTime() + 6*86400000).toLocaleDateString(undefined, { month:'short', day:'numeric' })}. Fill in each day yourself — synced across the team.`;
 
   // Build week key based on the snapshot Monday (so storage is stable)
   const weekKey = 'esen_film_week_' + isoDate(today);
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(weekKey) || '{}'); } catch (e) { saved = {}; }
+  const fromStore = sharedGet(weekKey);
+  let saved = (fromStore && typeof fromStore === 'object') ? fromStore : {};
 
   const cards = [];
   for (let i = 0; i < 7; i++) {
@@ -1440,8 +1501,8 @@ function renderFilm() {
     const dKey = 'd' + idx;
     card.querySelectorAll('[data-field]').forEach(el => {
       const handler = () => {
-        let cur = {};
-        try { cur = JSON.parse(localStorage.getItem(weekKey) || '{}'); } catch (e) {}
+        const fromStore2 = sharedGet(weekKey);
+        let cur = (fromStore2 && typeof fromStore2 === 'object') ? fromStore2 : {};
         const dayObj = cur[dKey] || {};
         if (el.type === 'checkbox') {
           dayObj[el.dataset.field] = el.checked;
@@ -1451,7 +1512,7 @@ function renderFilm() {
           dayObj[el.dataset.field] = el.value;
         }
         cur[dKey] = dayObj;
-        localStorage.setItem(weekKey, JSON.stringify(cur));
+        sharedSet(weekKey, cur);
       };
       el.addEventListener('input', handler);
       el.addEventListener('change', handler);
@@ -1462,8 +1523,8 @@ function renderFilm() {
   const resetBtn = document.getElementById('film-reset');
   if (resetBtn) {
     resetBtn.onclick = () => {
-      if (confirm('Clear all entries for this week?')) {
-        localStorage.removeItem(weekKey);
+      if (confirm('Clear all entries for this week? This affects everyone on the team.')) {
+        sharedRemove(weekKey);
         renderFilm();
       }
     };
@@ -1684,11 +1745,11 @@ document.getElementById('sb-toggle').addEventListener('click', () => {
 const MY_IDEAS_KEY = 'esen_my_ideas';
 
 function getMyIdeas() {
-  try { return JSON.parse(localStorage.getItem(MY_IDEAS_KEY) || '[]'); }
-  catch (e) { return []; }
+  const v = sharedGet(MY_IDEAS_KEY);
+  return Array.isArray(v) ? v : [];
 }
 function saveMyIdeas(arr) {
-  localStorage.setItem(MY_IDEAS_KEY, JSON.stringify(arr));
+  sharedSet(MY_IDEAS_KEY, arr);
 }
 function renderMyIdeas() {
   const list = getMyIdeas();
@@ -1738,35 +1799,72 @@ document.querySelectorAll('.cb-toggle-btn').forEach(btn => {
 });
 
 /* ============================================================================
-   NOTES · auto-save per section to localStorage
+   NOTES · auto-save per section to SHARED STORE (npoint.io)
    ============================================================================ */
 function setupNotesTextareas() {
   document.querySelectorAll('textarea[data-notes-key]').forEach(ta => {
     const key = ta.dataset.notesKey;
     const savedLabel = document.getElementById('notes-saved-' + key.replace('esen_notes_', ''));
-    // Load saved value
-    try {
-      const v = localStorage.getItem(key);
-      if (v !== null) ta.value = v;
-    } catch (e) {}
+    // Load from shared store
+    const v = sharedGet(key);
+    if (v !== null && typeof v === 'string') ta.value = v;
     let timeout;
     ta.addEventListener('input', () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        localStorage.setItem(key, ta.value);
+        sharedSet(key, ta.value);
         if (savedLabel) {
-          savedLabel.textContent = 'Saved ✓ ' + new Date().toLocaleTimeString();
-          setTimeout(() => { if (savedLabel) savedLabel.textContent = ''; }, 2500);
+          savedLabel.textContent = 'Saving…';
+          // Watch the next push to update label
+          const checkInterval = setInterval(() => {
+            if (!savePending) {
+              clearInterval(checkInterval);
+              if (lastSaveStatus === 'ok') {
+                savedLabel.textContent = 'Synced ✓ ' + new Date().toLocaleTimeString();
+              } else {
+                savedLabel.textContent = '⚠ Offline — will retry';
+              }
+              setTimeout(() => { if (savedLabel) savedLabel.textContent = ''; }, 3000);
+            }
+          }, 200);
         }
       }, 500);
     });
   });
 }
-setupNotesTextareas();
-renderMyIdeas();
-
-setDefaultDates();
-applyDateRange();
+// Async startup: load shared store first, then render everything
+(async function startup() {
+  await loadSharedStore();
+  setupNotesTextareas();
+  renderMyIdeas();
+  setDefaultDates();
+  applyDateRange();
+  // Optional: poll for changes from teammates every 30 seconds
+  setInterval(async () => {
+    // Only refresh if user isn't actively typing (no save pending)
+    if (savePending) return;
+    const before = JSON.stringify(sharedStore);
+    await loadSharedStore();
+    const after = JSON.stringify(sharedStore);
+    if (before !== after) {
+      // Something changed — refresh notes textareas, ideas, and film grid
+      document.querySelectorAll('textarea[data-notes-key]').forEach(ta => {
+        if (document.activeElement === ta) return; // don't overwrite while typing
+        const v = sharedGet(ta.dataset.notesKey);
+        if (v !== null && typeof v === 'string' && ta.value !== v) ta.value = v;
+      });
+      // Refresh My Ideas if visible
+      if (document.getElementById('cb-view-mine')?.classList.contains('active')) {
+        renderMyIdeas();
+      }
+      // Refresh Film grid if visible (and not actively focused)
+      if (document.getElementById('page-film')?.classList.contains('active') &&
+          !document.activeElement?.closest('#film-grid')) {
+        renderFilm();
+      }
+    }
+  }, 30000);
+})();
 </script>
 </body>
 </html>
