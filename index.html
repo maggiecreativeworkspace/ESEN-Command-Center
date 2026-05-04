@@ -467,6 +467,81 @@ body { padding: 0; }
 }
 .film-card-blank.filmed { opacity: 0.7; background: #f0f4ea; }
 
+/* ============== MONTHLY UPLOAD PLANNER ============== */
+.month-section {
+  margin-top: 32px; padding-top: 22px; border-top: 1px solid #e5e0d8;
+}
+.month-section h3 {
+  font-family: Georgia, serif; font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; color: #2a2a2a; margin-bottom: 4px;
+}
+.month-section .ms-sub {
+  font-size: 11px; color: #8a7f6f; margin-bottom: 16px;
+}
+.month-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+}
+.week-card {
+  border: 1px solid #ece6d8; border-radius: 4px; padding: 14px;
+  background: #fefdfa;
+}
+.week-card .wc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #ece6d8;
+}
+.week-card .wc-title {
+  font-family: Georgia, serif; font-size: 13px; color: #2a2a2a; font-weight: 600;
+}
+.week-card .wc-range {
+  font-size: 10px; color: #8a7f6f;
+}
+.upload-item {
+  border: 1px solid #ece6d8; border-radius: 3px; padding: 10px;
+  margin-bottom: 8px; background: #faf8f3;
+  display: flex; flex-direction: column; gap: 6px; position: relative;
+}
+.upload-item .ui-row1 {
+  display: grid; grid-template-columns: 1fr 1.5fr; gap: 6px;
+}
+.upload-item .ui-row2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.upload-item input[type=date],
+.upload-item input[type=text],
+.upload-item select,
+.upload-item textarea {
+  width: 100%; padding: 5px 7px; font-family: inherit; font-size: 11px;
+  border: 1px solid #d8d2c4; border-radius: 2px; background: #fff;
+  color: #2a2a2a;
+}
+.upload-item textarea { min-height: 36px; resize: vertical; }
+.upload-item input:focus, .upload-item select:focus, .upload-item textarea:focus {
+  outline: none; border-color: #b89968;
+}
+.upload-item .ui-delete {
+  position: absolute; top: 6px; right: 6px;
+  background: transparent; border: 1px solid #d8d2c4; color: #a85a3a;
+  width: 22px; height: 22px; font-size: 11px; line-height: 1;
+  cursor: pointer; border-radius: 2px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-item .ui-delete:hover { background: #fdf3ee; }
+.upload-item .ui-status-posted { background: #f0f4ea; }
+.upload-item .ui-status-ready { background: #fbf6e8; }
+.upload-add-btn {
+  width: 100%; padding: 8px; margin-top: 4px;
+  background: transparent; border: 1px dashed #d8d2c4; color: #8a7f6f;
+  font-family: inherit; font-size: 11px; cursor: pointer; border-radius: 3px;
+  transition: all 0.15s;
+}
+.upload-add-btn:hover {
+  background: #f8f3e7; color: #2a2a2a; border-color: #b89968; border-style: solid;
+}
+.month-empty {
+  font-size: 10px; color: #a89e8c; font-style: italic; padding: 8px 0;
+  text-align: center;
+}
+
 @media (max-width: 1100px) {
   .overview-grid { grid-template-columns: repeat(3, 1fr); }
   .tab-body { grid-template-columns: 1fr; }
@@ -685,6 +760,13 @@ body { padding: 0; }
 
         <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
           <button class="btn ghost" id="film-reset">Reset Week</button>
+        </div>
+
+        <!-- Monthly Upload Planner -->
+        <div class="month-section">
+          <h3>What to Upload This Month</h3>
+          <div class="ms-sub" id="month-sub">—</div>
+          <div class="month-grid" id="month-grid"></div>
         </div>
 
         <div class="notes-block">
@@ -1097,6 +1179,7 @@ function render() {
   renderContentBank();
   renderWeekly();
   renderFilm();
+  renderMonth();
   renderChanged();
 }
 
@@ -1531,6 +1614,147 @@ function renderFilm() {
   }
 }
 
+function renderMonth() {
+  const today = new Date(SNAPSHOT_AT);
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth(); // 0-indexed
+  const monthName = today.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const monthKey = `esen_month_uploads_${year}_${String(month + 1).padStart(2, '0')}`;
+
+  document.getElementById('month-sub').textContent =
+    `${monthName} — plan all uploads across the team. Click "Add upload" inside each week to create a slot. Synced live.`;
+
+  // Compute the 4 (or 5) weeks of the month
+  // Week boundaries: split the month into segments based on actual dates
+  const firstDay = new Date(Date.UTC(year, month, 1));
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)); // last day of month
+  const totalDays = lastDay.getUTCDate();
+
+  // Build weeks: each week is a 7-day block starting from day 1, capped at totalDays
+  const weeks = [];
+  let dayCursor = 1;
+  let weekNum = 1;
+  while (dayCursor <= totalDays) {
+    const startDay = dayCursor;
+    const endDay = Math.min(dayCursor + 6, totalDays);
+    weeks.push({ num: weekNum, startDay, endDay });
+    dayCursor = endDay + 1;
+    weekNum++;
+  }
+
+  // Load existing uploads
+  const fromStore = sharedGet(monthKey);
+  const monthData = (fromStore && typeof fromStore === 'object' && !Array.isArray(fromStore)) ? fromStore : {};
+
+  const fmtDay = (d) => `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+
+  document.getElementById('month-grid').innerHTML = weeks.map(w => {
+    const wKey = `w${w.num}`;
+    const uploads = Array.isArray(monthData[wKey]) ? monthData[wKey] : [];
+    const startD = new Date(Date.UTC(year, month, w.startDay));
+    const endD = new Date(Date.UTC(year, month, w.endDay));
+
+    const itemsHtml = uploads.length === 0
+      ? `<div class="month-empty">No uploads planned yet.</div>`
+      : uploads.map(u => {
+          const statusClass = u.status === 'Posted' ? ' ui-status-posted'
+                            : u.status === 'Ready' ? ' ui-status-ready' : '';
+          return `<div class="upload-item${statusClass}" data-upload-id="${u.id}">
+            <button class="ui-delete" data-action="delete-upload" data-week="${wKey}" data-id="${u.id}" title="Delete">×</button>
+            <div class="ui-row1">
+              <input type="date" data-field="date" data-week="${wKey}" data-id="${u.id}" value="${escapeHtml(u.date || '')}">
+              <input type="text" data-field="title" data-week="${wKey}" data-id="${u.id}" value="${escapeHtml(u.title || '')}" placeholder="Post title / idea">
+            </div>
+            <div class="ui-row2">
+              <select data-field="platform" data-week="${wKey}" data-id="${u.id}">
+                <option value="">Platform…</option>
+                <option ${u.platform === 'IG @esenmagazine' ? 'selected' : ''}>IG @esenmagazine</option>
+                <option ${u.platform === 'IG @esenmedical' ? 'selected' : ''}>IG @esenmedical</option>
+                <option ${u.platform === 'IG @drwilsontsou' ? 'selected' : ''}>IG @drwilsontsou</option>
+                <option ${u.platform === 'Youtube' ? 'selected' : ''}>Youtube</option>
+              </select>
+              <select data-field="status" data-week="${wKey}" data-id="${u.id}">
+                <option ${!u.status ? 'selected' : ''} value="">Status…</option>
+                <option ${u.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                <option ${u.status === 'Ready' ? 'selected' : ''}>Ready</option>
+                <option ${u.status === 'Posted' ? 'selected' : ''}>Posted</option>
+              </select>
+            </div>
+            <textarea data-field="notes" data-week="${wKey}" data-id="${u.id}" placeholder="Notes (optional)">${escapeHtml(u.notes || '')}</textarea>
+          </div>`;
+        }).join('');
+
+    return `<div class="week-card" data-week="${wKey}">
+      <div class="wc-header">
+        <div class="wc-title">Week ${w.num}</div>
+        <div class="wc-range">${fmtDay(startD)} – ${fmtDay(endD)}</div>
+      </div>
+      ${itemsHtml}
+      <button class="upload-add-btn" data-action="add-upload" data-week="${wKey}">+ Add upload</button>
+    </div>`;
+  }).join('');
+
+  // Wire up Add buttons
+  document.querySelectorAll('#month-grid [data-action="add-upload"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wKey = btn.dataset.week;
+      const fromStore2 = sharedGet(monthKey);
+      const data = (fromStore2 && typeof fromStore2 === 'object' && !Array.isArray(fromStore2)) ? fromStore2 : {};
+      const arr = Array.isArray(data[wKey]) ? data[wKey] : [];
+      arr.push({
+        id: 'up_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        date: '', title: '', platform: '', status: '', notes: ''
+      });
+      data[wKey] = arr;
+      sharedSet(monthKey, data);
+      renderMonth();
+    });
+  });
+
+  // Wire up Delete buttons
+  document.querySelectorAll('#month-grid [data-action="delete-upload"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!confirm('Delete this upload? This affects everyone on the team.')) return;
+      const wKey = btn.dataset.week;
+      const id = btn.dataset.id;
+      const fromStore2 = sharedGet(monthKey);
+      const data = (fromStore2 && typeof fromStore2 === 'object' && !Array.isArray(fromStore2)) ? fromStore2 : {};
+      if (Array.isArray(data[wKey])) {
+        data[wKey] = data[wKey].filter(u => u.id !== id);
+      }
+      sharedSet(monthKey, data);
+      renderMonth();
+    });
+  });
+
+  // Wire up field edits (input + change events)
+  document.querySelectorAll('#month-grid [data-field]').forEach(el => {
+    const handler = () => {
+      const wKey = el.dataset.week;
+      const id = el.dataset.id;
+      const field = el.dataset.field;
+      const fromStore2 = sharedGet(monthKey);
+      const data = (fromStore2 && typeof fromStore2 === 'object' && !Array.isArray(fromStore2)) ? fromStore2 : {};
+      if (!Array.isArray(data[wKey])) return;
+      const item = data[wKey].find(u => u.id === id);
+      if (!item) return;
+      item[field] = el.value;
+      sharedSet(monthKey, data);
+      // Live re-tint background if status changed
+      if (field === 'status') {
+        const card = el.closest('.upload-item');
+        if (card) {
+          card.classList.remove('ui-status-posted', 'ui-status-ready');
+          if (el.value === 'Posted') card.classList.add('ui-status-posted');
+          else if (el.value === 'Ready') card.classList.add('ui-status-ready');
+        }
+      }
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+}
+
 function renderChanged() {
   const { media, from, to } = lastData;
   const fromD = new Date(from), toD = new Date(to);
@@ -1861,6 +2085,11 @@ function setupNotesTextareas() {
       if (document.getElementById('page-film')?.classList.contains('active') &&
           !document.activeElement?.closest('#film-grid')) {
         renderFilm();
+      }
+      // Refresh Month grid if visible and user isn't typing in it
+      if (document.getElementById('page-film')?.classList.contains('active') &&
+          !document.activeElement?.closest('#month-grid')) {
+        renderMonth();
       }
     }
   }, 30000);
